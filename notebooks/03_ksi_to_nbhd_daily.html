@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>02_build_base_nbhd_day_table</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>03_ksi_to_nbhd_daily</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7796,13 +7796,13 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ece3807437a844cb">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=abf0b12e860337ff">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Loading-daily-collisions-and-neighbourhood-list">Loading daily collisions and neighbourhood list<a class="anchor-link" href="#Loading-daily-collisions-and-neighbourhood-list">¶</a></h3>
+<h3 id="Load-KSI-file">Load KSI file<a class="anchor-link" href="#Load-KSI-file">¶</a></h3>
 </div>
 </div>
 </div>
@@ -7811,21 +7811,45 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 
-<span class="n">DAILY_PATH</span> <span class="o">=</span> <span class="s2">"../data/interim/collisions_nbhd_daily.parquet"</span>
-<span class="n">NBHD_PATH</span> <span class="o">=</span> <span class="s2">"../data/raw/boundaries/toronto_neighbourhoods.geojson"</span>
+<span class="n">REPO_ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"notebooks"</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">REPO_ROOT</span> <span class="o">/</span> <span class="s2">"data"</span>
+<span class="n">RAW_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">"raw"</span>
+<span class="n">INTERIM_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">"interim"</span>
+<span class="n">INTERIM_DIR</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">DAILY_PATH</span><span class="p">)</span>
-<span class="n">nbhd</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">NBHD_PATH</span><span class="p">)[[</span><span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+<span class="n">ksi_dir</span> <span class="o">=</span> <span class="n">RAW_DIR</span> <span class="o">/</span> <span class="s2">"ksi"</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">ksi_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Create folder and place KSI file here: </span><span class="si">{</span><span class="n">ksi_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">daily</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">nbhd</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">daily</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ksi_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Found files:"</span><span class="p">,</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">"No files found in data/raw/ksi/"</span><span class="p">)</span>
+
+<span class="n">ksi_path</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Using:"</span><span class="p">,</span> <span class="n">ksi_path</span><span class="p">)</span>
+
+<span class="c1"># Read based on extension</span>
+<span class="k">if</span> <span class="n">ksi_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">".parquet"</span><span class="p">]:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">ksi_path</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">ksi_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">".csv"</span><span class="p">]:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">ksi_path</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">ksi_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">".geojson"</span><span class="p">,</span> <span class="s2">".json"</span><span class="p">,</span> <span class="s2">".shp"</span><span class="p">]:</span>
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">ksi_path</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported file type: </span><span class="si">{</span><span class="n">ksi_path</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"KSI shape:"</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7838,12 +7862,14 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(362550, 4) (158, 2)
+<pre>Found files: ['total_ksi.geojson']
+Using: C:\code\pyspark-playground\Covercheck-Toronto\data\raw\ksi\total_ksi.geojson
+KSI shape: (18957, 52)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -7863,79 +7889,135 @@ a.anchor-link {
 <thead>
 <tr style="text-align: right;">
 <th></th>
-<th>date</th>
-<th>AREA_ID</th>
-<th>AREA_NAME</th>
-<th>collision_count</th>
+<th>OBJECTID</th>
+<th>INDEX_</th>
+<th>ACCNUM</th>
+<th>DATE</th>
+<th>TIME</th>
+<th>STREET1</th>
+<th>STREET2</th>
+<th>OFFSET</th>
+<th>ROAD_CLASS</th>
+<th>DISTRICT</th>
+<th>...</th>
+<th>SPEEDING</th>
+<th>AG_DRIV</th>
+<th>REDLIGHT</th>
+<th>ALCOHOL</th>
+<th>DISABILITY</th>
+<th>HOOD_158</th>
+<th>NEIGHBOURHOOD_158</th>
+<th>HOOD_140</th>
+<th>NEIGHBOURHOOD_140</th>
+<th>DIVISION</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <th>0</th>
-<td>2014-01-01</td>
-<td>2502209</td>
-<td>Humber Summit</td>
 <td>1</td>
+<td>3389067</td>
+<td>893184</td>
+<td>Sun, 01 Jan 2006 10:00:00 GMT</td>
+<td>236</td>
+<td>WOODBINE AVE</td>
+<td>O CONNOR DR</td>
+<td>NaN</td>
+<td>Major Arterial</td>
+<td>Toronto and East York</td>
+<td>...</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>NaN</td>
+<td>Yes</td>
+<td>NaN</td>
+<td>60</td>
+<td>Woodbine-Lumsden</td>
+<td>60</td>
+<td>Woodbine-Lumsden (60)</td>
+<td>D55</td>
 </tr>
 <tr>
 <th>1</th>
-<td>2014-01-01</td>
-<td>2502213</td>
-<td>West Humber-Clairville</td>
-<td>1</td>
-</tr>
-<tr>
-<th>2</th>
-<td>2014-01-01</td>
-<td>2502218</td>
-<td>Kingsview Village-The Westway</td>
-<td>1</td>
-</tr>
-<tr>
-<th>3</th>
-<td>2014-01-01</td>
-<td>2502222</td>
-<td>Princess-Rosethorn</td>
-<td>1</td>
-</tr>
-<tr>
-<th>4</th>
-<td>2014-01-01</td>
-<td>2502227</td>
-<td>Stonegate-Queensway</td>
-<td>1</td>
+<td>2</td>
+<td>3389068</td>
+<td>893184</td>
+<td>Sun, 01 Jan 2006 10:00:00 GMT</td>
+<td>236</td>
+<td>WOODBINE AVE</td>
+<td>O CONNOR DR</td>
+<td>NaN</td>
+<td>Major Arterial</td>
+<td>Toronto and East York</td>
+<td>...</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>NaN</td>
+<td>Yes</td>
+<td>NaN</td>
+<td>60</td>
+<td>Woodbine-Lumsden</td>
+<td>60</td>
+<td>Woodbine-Lumsden (60)</td>
+<td>D55</td>
 </tr>
 </tbody>
 </table>
+<p>2 rows × 52 columns</p>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a42a2f97b1613b2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b218a2d4892545e9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Creating-full-date-range">Creating full date range<a class="anchor-link" href="#Creating-full-date-range">¶</a></h3>
+<h3 id="Clean,-parse-date-and-build-flags">Clean, parse date and build flags<a class="anchor-link" href="#Clean,-parse-date-and-build-flags">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5e629df1a47e52e6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=30f4402629bdee5a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">min_date</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-<span class="n">max_date</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="c1"># Parse date: "Sun, 01 Jan 2006 10:00:00 GMT" to datetime to date</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"DATE"</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span>
 
-<span class="n">all_dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">min_date</span><span class="p">,</span> <span class="n">max_date</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">min_date</span><span class="p">,</span> <span class="n">max_date</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_dates</span><span class="p">))</span>
+<span class="c1"># Drop rows where the date completely failed to parse</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"date"</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Standardize neighbourhood id &amp; Handle "NSA" (No Specific Address)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"HOOD_158"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
+
+<span class="c1"># FIX: Drop the unmappable "NSA" rows BEFORE the assert line</span>
+<span class="n">invalid_hoods</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dropping </span><span class="si">{</span><span class="n">invalid_hoods</span><span class="si">}</span><span class="s2"> rows without a valid neighbourhood (e.g., 'NSA')."</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Now it is safe to assert and convert to integer</span>
+<span class="k">assert</span> <span class="n">df</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"HOOD_158 still has null values"</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="c1"># Injury flags</span>
+<span class="c1"># Toronto KSI data often codes serious injuries as "Major".</span>
+<span class="c1"># Using a regex '|' (or) to catch both "serious" and "major".</span>
+<span class="n">inj</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"INJURY"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"is_fatal"</span><span class="p">]</span> <span class="o">=</span> <span class="n">inj</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">"fatal"</span><span class="p">,</span> <span class="n">na</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"is_serious"</span><span class="p">]</span> <span class="o">=</span> <span class="n">inj</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">"serious|major"</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">na</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Fatal victims</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"fatal_no"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"FATAL_NO"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Cleaned DataFrame shape:"</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[[</span><span class="s2">"ACCNUM"</span><span class="p">,</span> <span class="s2">"date"</span><span class="p">,</span> <span class="s2">"nbhd_id"</span><span class="p">,</span> <span class="s2">"INJURY"</span><span class="p">,</span> <span class="s2">"is_fatal"</span><span class="p">,</span> <span class="s2">"is_serious"</span><span class="p">,</span> <span class="s2">"fatal_no"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7948,56 +8030,13 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>2014-01-01 00:00:00 2025-12-31 00:00:00 4383
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=946b83128310f14">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Cross-joining-neighborhoods-and-dates">Cross joining neighborhoods and dates<a class="anchor-link" href="#Cross-joining-neighborhoods-and-dates">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b406e37161f1ec32">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">nbhd</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">dates_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"date"</span><span class="p">:</span> <span class="n">all_dates</span><span class="p">})</span>
-<span class="n">dates_df</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="n">base</span> <span class="o">=</span> <span class="n">nbhd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">dates_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"key"</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"key"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">base</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(692514, 3)
+<pre>Dropping 128 rows without a valid neighbourhood (e.g., 'NSA').
+Cleaned DataFrame shape: (18829, 57)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8017,41 +8056,65 @@ a.anchor-link {
 <thead>
 <tr style="text-align: right;">
 <th></th>
-<th>AREA_ID</th>
-<th>AREA_NAME</th>
+<th>ACCNUM</th>
 <th>date</th>
+<th>nbhd_id</th>
+<th>INJURY</th>
+<th>is_fatal</th>
+<th>is_serious</th>
+<th>fatal_no</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <th>0</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-01</td>
+<td>893184</td>
+<td>2006-01-01</td>
+<td>60</td>
+<td>Major</td>
+<td>False</td>
+<td>True</td>
+<td>0</td>
 </tr>
 <tr>
 <th>1</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-02</td>
+<td>893184</td>
+<td>2006-01-01</td>
+<td>60</td>
+<td>Minor</td>
+<td>False</td>
+<td>False</td>
+<td>0</td>
 </tr>
 <tr>
 <th>2</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-03</td>
+<td>893184</td>
+<td>2006-01-01</td>
+<td>60</td>
+<td>Minor</td>
+<td>False</td>
+<td>False</td>
+<td>0</td>
 </tr>
 <tr>
 <th>3</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-04</td>
+<td>893184</td>
+<td>2006-01-01</td>
+<td>60</td>
+<td>Minor</td>
+<td>False</td>
+<td>False</td>
+<td>0</td>
 </tr>
 <tr>
 <th>4</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-05</td>
+<td>893184</td>
+<td>2006-01-01</td>
+<td>60</td>
+<td>Minor</td>
+<td>False</td>
+<td>False</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
@@ -8061,34 +8124,36 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=86ec3b9dea73709">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bc2bca4356314189">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Left-joining-collisions-and-filling-0">Left joining collisions and filling 0<a class="anchor-link" href="#Left-joining-collisions-and-filling-0">¶</a></h3>
+<h3 id="Collapse-to-accident-level">Collapse to accident level<a class="anchor-link" href="#Collapse-to-accident-level">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=350a043f74eb1ea8">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7a824880d3fea2bc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-    <span class="n">daily</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"AREA_ID"</span><span class="p">:</span> <span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">:</span> <span class="s2">"AREA_NAME"</span><span class="p">}),</span>
-    <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">],</span>
-    <span class="n">how</span><span class="o">=</span><span class="s2">"left"</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">acc_level</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">"ACCNUM"</span><span class="p">,</span> <span class="s2">"date"</span><span class="p">,</span> <span class="s2">"nbhd_id"</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+          <span class="n">fatal_collision</span><span class="o">=</span><span class="p">(</span><span class="s2">"is_fatal"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">),</span>
+          <span class="n">serious_collision</span><span class="o">=</span><span class="p">(</span><span class="s2">"is_serious"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">),</span>
+          <span class="n">fatal_victims</span><span class="o">=</span><span class="p">(</span><span class="s2">"is_fatal"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">),</span> <span class="c1">#changed from fatal_no to is_fatal since final output had mismatched numbers</span>
+          <span class="n">victim_count</span><span class="o">=</span><span class="p">(</span><span class="s2">"OBJECTID"</span><span class="p">,</span> <span class="s2">"count"</span><span class="p">)</span>
+      <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span> <span class="o">=</span> <span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Accident-level rows:"</span><span class="p">,</span> <span class="n">acc_level</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">acc_level</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -8101,48 +8166,140 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(692514, 4)
+<pre>Accident-level rows: (4919, 7)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>count    692514.000000
-mean          0.952180
-std           1.274196
-min           0.000000
-25%           0.000000
-50%           1.000000
-75%           1.000000
-max          28.000000
-Name: collision_count, dtype: float64</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>ACCNUM</th>
+<th>date</th>
+<th>nbhd_id</th>
+<th>fatal_collision</th>
+<th>serious_collision</th>
+<th>fatal_victims</th>
+<th>victim_count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>1000002228</td>
+<td>2021-01-01</td>
+<td>155</td>
+<td>True</td>
+<td>True</td>
+<td>1</td>
+<td>6</td>
+</tr>
+<tr>
+<th>1</th>
+<td>1000028</td>
+<td>2007-11-01</td>
+<td>92</td>
+<td>False</td>
+<td>True</td>
+<td>0</td>
+<td>5</td>
+</tr>
+<tr>
+<th>2</th>
+<td>1000041217</td>
+<td>2021-01-07</td>
+<td>85</td>
+<td>False</td>
+<td>True</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<th>3</th>
+<td>1000055</td>
+<td>2007-10-24</td>
+<td>73</td>
+<td>False</td>
+<td>True</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr>
+<th>4</th>
+<td>1000067206</td>
+<td>2021-01-11</td>
+<td>139</td>
+<td>False</td>
+<td>True</td>
+<td>0</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9aa47ddba5edaa7f">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b692a5972846bc94">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Saving-processed-base-table">Saving processed base table<a class="anchor-link" href="#Saving-processed-base-table">¶</a></h3>
+<h3 id="Aggregate-daily-per-neighbourhood">Aggregate daily per neighbourhood<a class="anchor-link" href="#Aggregate-daily-per-neighbourhood">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c97782e1bd888d15">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=469d2b4d95f61e9d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">OUT_PATH</span> <span class="o">=</span> <span class="s2">"../data/processed/base_nbhd_day.parquet"</span>
-<span class="n">base</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">OUT_PATH</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Saved:"</span><span class="p">,</span> <span class="n">OUT_PATH</span><span class="p">)</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">ksi_daily</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">acc_level</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">"nbhd_id"</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+          <span class="n">ksi_collisions</span><span class="o">=</span><span class="p">(</span><span class="s2">"ACCNUM"</span><span class="p">,</span> <span class="s2">"nunique"</span><span class="p">),</span>
+          <span class="n">ksi_fatal_collisions</span><span class="o">=</span><span class="p">(</span><span class="s2">"fatal_collision"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">),</span>
+          <span class="n">ksi_serious_collisions</span><span class="o">=</span><span class="p">(</span><span class="s2">"serious_collision"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">),</span>
+          <span class="n">ksi_fatal_victims</span><span class="o">=</span><span class="p">(</span><span class="s2">"fatal_victims"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">),</span>
+          <span class="n">ksi_victim_count</span><span class="o">=</span><span class="p">(</span><span class="s2">"victim_count"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">)</span>
+      <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">ksi_daily</span><span class="p">[</span><span class="s2">"ksi_weighted_score"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mi">3</span> <span class="o">*</span> <span class="n">ksi_daily</span><span class="p">[</span><span class="s2">"ksi_fatal_collisions"</span><span class="p">]</span> <span class="o">+</span>
+    <span class="mi">2</span> <span class="o">*</span> <span class="n">ksi_daily</span><span class="p">[</span><span class="s2">"ksi_serious_collisions"</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1">#protecting from schema drift</span>
+<span class="k">assert</span> <span class="p">(</span><span class="n">ksi_daily</span><span class="p">[</span><span class="s2">"ksi_fatal_victims"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ksi_daily</span><span class="p">[</span><span class="s2">"ksi_victim_count"</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> \
+    <span class="s2">"Fatal victims exceed victim count — something is wrong."</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"KSI daily shape:"</span><span class="p">,</span> <span class="n">ksi_daily</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">ksi_daily</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -8155,7 +8312,139 @@ Name: collision_count, dtype: float64</pre>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Saved: ../data/processed/base_nbhd_day.parquet
+<pre>KSI daily shape: (4879, 8)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>date</th>
+<th>nbhd_id</th>
+<th>ksi_collisions</th>
+<th>ksi_fatal_collisions</th>
+<th>ksi_serious_collisions</th>
+<th>ksi_fatal_victims</th>
+<th>ksi_victim_count</th>
+<th>ksi_weighted_score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>2006-01-01</td>
+<td>60</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<th>1</th>
+<td>2006-01-01</td>
+<td>64</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>5</td>
+<td>2</td>
+</tr>
+<tr>
+<th>2</th>
+<td>2006-01-02</td>
+<td>78</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<th>3</th>
+<td>2006-01-04</td>
+<td>83</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<th>4</th>
+<td>2006-01-06</td>
+<td>47</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e4d521321e252205">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Save">Save<a class="anchor-link" href="#Save">¶</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=dc89bb284bb80ea0">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">out_path</span> <span class="o">=</span> <span class="n">INTERIM_DIR</span> <span class="o">/</span> <span class="s2">"ksi_nbhd_daily.parquet"</span>
+<span class="n">ksi_daily</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Saved:"</span><span class="p">,</span> <span class="n">out_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Saved: C:\code\pyspark-playground\Covercheck-Toronto\data\interim\ksi_nbhd_daily.parquet
 </pre>
 </div>
 </div>

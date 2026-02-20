@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>02_build_base_nbhd_day_table</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>02B_add_nbhd_id_to_base</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7796,13 +7796,13 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ece3807437a844cb">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=357e0e5df188ab6e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Loading-daily-collisions-and-neighbourhood-list">Loading daily collisions and neighbourhood list<a class="anchor-link" href="#Loading-daily-collisions-and-neighbourhood-list">¶</a></h3>
+<h3 id="Load-base-and-dim">Load base and dim<a class="anchor-link" href="#Load-base-and-dim">¶</a></h3>
 </div>
 </div>
 </div>
@@ -7811,175 +7811,26 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
-
-<span class="n">DAILY_PATH</span> <span class="o">=</span> <span class="s2">"../data/interim/collisions_nbhd_daily.parquet"</span>
-<span class="n">NBHD_PATH</span> <span class="o">=</span> <span class="s2">"../data/raw/boundaries/toronto_neighbourhoods.geojson"</span>
-
-<span class="n">daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">DAILY_PATH</span><span class="p">)</span>
-<span class="n">nbhd</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">NBHD_PATH</span><span class="p">)[[</span><span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
-
-<span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">daily</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">nbhd</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">daily</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(362550, 4) (158, 2)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>date</th>
-<th>AREA_ID</th>
-<th>AREA_NAME</th>
-<th>collision_count</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>2014-01-01</td>
-<td>2502209</td>
-<td>Humber Summit</td>
-<td>1</td>
-</tr>
-<tr>
-<th>1</th>
-<td>2014-01-01</td>
-<td>2502213</td>
-<td>West Humber-Clairville</td>
-<td>1</td>
-</tr>
-<tr>
-<th>2</th>
-<td>2014-01-01</td>
-<td>2502218</td>
-<td>Kingsview Village-The Westway</td>
-<td>1</td>
-</tr>
-<tr>
-<th>3</th>
-<td>2014-01-01</td>
-<td>2502222</td>
-<td>Princess-Rosethorn</td>
-<td>1</td>
-</tr>
-<tr>
-<th>4</th>
-<td>2014-01-01</td>
-<td>2502227</td>
-<td>Stonegate-Queensway</td>
-<td>1</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a42a2f97b1613b2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Creating-full-date-range">Creating full date range<a class="anchor-link" href="#Creating-full-date-range">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5e629df1a47e52e6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">min_date</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-<span class="n">max_date</span> <span class="o">=</span> <span class="n">daily</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-
-<span class="n">all_dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">min_date</span><span class="p">,</span> <span class="n">max_date</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">min_date</span><span class="p">,</span> <span class="n">max_date</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_dates</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>2014-01-01 00:00:00 2025-12-31 00:00:00 4383
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=946b83128310f14">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Cross-joining-neighborhoods-and-dates">Cross joining neighborhoods and dates<a class="anchor-link" href="#Cross-joining-neighborhoods-and-dates">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b406e37161f1ec32">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">nbhd</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">dates_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"date"</span><span class="p">:</span> <span class="n">all_dates</span><span class="p">})</span>
-<span class="n">dates_df</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">base</span> <span class="o">=</span> <span class="n">nbhd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">dates_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"key"</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"key"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">base</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">REPO_ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"notebooks"</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">REPO_ROOT</span> <span class="o">/</span> <span class="s2">"data"</span>
+<span class="n">INTERIM_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">"interim"</span>
+<span class="n">PROCESSED_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">"processed"</span>
+
+<span class="n">base_path</span> <span class="o">=</span> <span class="n">PROCESSED_DIR</span> <span class="o">/</span> <span class="s2">"base_nbhd_day.parquet"</span>
+<span class="n">dim_path</span> <span class="o">=</span> <span class="n">INTERIM_DIR</span> <span class="o">/</span> <span class="s2">"dim_neighbourhoods.parquet"</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span>
+<span class="n">dim</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">dim_path</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"base:"</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"dim:"</span><span class="p">,</span> <span class="n">dim</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">base</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7992,7 +7843,8 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(692514, 3)
+<pre>base: (692514, 4)
+dim: (158, 4)
 </pre>
 </div>
 </div>
@@ -8020,6 +7872,7 @@ a.anchor-link {
 <th>AREA_ID</th>
 <th>AREA_NAME</th>
 <th>date</th>
+<th>collision_count</th>
 </tr>
 </thead>
 <tbody>
@@ -8028,30 +7881,14 @@ a.anchor-link {
 <td>2502366</td>
 <td>South Eglinton-Davisville</td>
 <td>2014-01-01</td>
+<td>0</td>
 </tr>
 <tr>
 <th>1</th>
 <td>2502366</td>
 <td>South Eglinton-Davisville</td>
 <td>2014-01-02</td>
-</tr>
-<tr>
-<th>2</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-03</td>
-</tr>
-<tr>
-<th>3</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-04</td>
-</tr>
-<tr>
-<th>4</th>
-<td>2502366</td>
-<td>South Eglinton-Davisville</td>
-<td>2014-01-05</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
@@ -8061,17 +7898,17 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=86ec3b9dea73709">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72226b714424aa77">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Left-joining-collisions-and-filling-0">Left joining collisions and filling 0<a class="anchor-link" href="#Left-joining-collisions-and-filling-0">¶</a></h3>
+<h3 id="Finding-the-base-key-column-automatically">Finding the base key column automatically<a class="anchor-link" href="#Finding-the-base-key-column-automatically">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=350a043f74eb1ea8">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7ac081820fe18d0b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8079,16 +7916,12 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-    <span class="n">daily</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"AREA_ID"</span><span class="p">:</span> <span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">:</span> <span class="s2">"AREA_NAME"</span><span class="p">}),</span>
-    <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"AREA_NAME"</span><span class="p">],</span>
-    <span class="n">how</span><span class="o">=</span><span class="s2">"left"</span>
-<span class="p">)</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">possible_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AREA_ID"</span><span class="p">,</span> <span class="s2">"area_id"</span><span class="p">]</span>
+<span class="n">base_key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">possible_keys</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">base_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find AREA_ID/area_id in base. Columns: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span> <span class="o">=</span> <span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">base</span><span class="p">[</span><span class="s2">"collision_count"</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Using base key:"</span><span class="p">,</span> <span class="n">base_key</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -8101,38 +7934,24 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(692514, 4)
+<pre>Using base key: AREA_ID
 </pre>
 </div>
 </div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>count    692514.000000
-mean          0.952180
-std           1.274196
-min           0.000000
-25%           0.000000
-50%           1.000000
-75%           1.000000
-max          28.000000
-Name: collision_count, dtype: float64</pre>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9aa47ddba5edaa7f">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f371d8a8ebd9cb87">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Saving-processed-base-table">Saving processed base table<a class="anchor-link" href="#Saving-processed-base-table">¶</a></h3>
+<h3 id="Merge,-validate-and-save">Merge, validate and save<a class="anchor-link" href="#Merge,-validate-and-save">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c97782e1bd888d15">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ab23b2768546460b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8140,9 +7959,36 @@ Name: collision_count, dtype: float64</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython2"><pre><span></span><span class="n">OUT_PATH</span> <span class="o">=</span> <span class="s2">"../data/processed/base_nbhd_day.parquet"</span>
-<span class="n">base</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">OUT_PATH</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Saved:"</span><span class="p">,</span> <span class="n">OUT_PATH</span><span class="p">)</span>
+<div class="highlight hl-ipython2"><pre><span></span><span class="n">before_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+
+<span class="c1">#patch to avoid int and string merge error</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Base key (</span><span class="si">{</span><span class="n">base_key</span><span class="si">}</span><span class="s2">) type: </span><span class="si">{</span><span class="n">base</span><span class="p">[</span><span class="n">base_key</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dim key (area_id) type: </span><span class="si">{</span><span class="n">dim</span><span class="p">[</span><span class="s1">'area_id'</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1">#forcing both to string to avoid mismatch</span>
+<span class="n">base</span><span class="p">[</span><span class="n">base_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">base</span><span class="p">[</span><span class="n">base_key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">dim</span><span class="p">[</span><span class="s2">"area_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">dim</span><span class="p">[</span><span class="s2">"area_id"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+
+<span class="n">merged</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">dim</span><span class="p">[[</span><span class="s2">"area_id"</span><span class="p">,</span> <span class="s2">"nbhd_id"</span><span class="p">,</span> <span class="s2">"area_name"</span><span class="p">]],</span>
+    <span class="n">left_on</span><span class="o">=</span><span class="n">base_key</span><span class="p">,</span>
+    <span class="n">right_on</span><span class="o">=</span><span class="s2">"area_id"</span><span class="p">,</span>
+    <span class="n">how</span><span class="o">=</span><span class="s2">"left"</span>
+<span class="p">)</span>
+
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span> <span class="o">==</span> <span class="n">before_rows</span><span class="p">,</span> <span class="s2">"Row count changed after merge — should not happen"</span>
+<span class="n">missing</span> <span class="o">=</span> <span class="n">merged</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Missing nbhd_id:"</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">missing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="c1"># show sample of broken keys</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">merged</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">merged</span><span class="p">[</span><span class="s2">"nbhd_id"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">(),</span> <span class="p">[</span><span class="n">base_key</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Some AREA_ID values did not map to dim_neighbourhoods. Fix dim mapping first."</span><span class="p">)</span>
+
+<span class="n">out_path</span> <span class="o">=</span> <span class="n">PROCESSED_DIR</span> <span class="o">/</span> <span class="s2">"base_nbhd_day_w158.parquet"</span>
+<span class="n">merged</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Saved:"</span><span class="p">,</span> <span class="n">out_path</span><span class="p">)</span>
+
+<span class="n">merged</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -8155,9 +8001,109 @@ Name: collision_count, dtype: float64</pre>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Saved: ../data/processed/base_nbhd_day.parquet
+<pre>Base key (AREA_ID) type: int32
+Dim key (area_id) type: str
+Missing nbhd_id: 0
+Saved: C:\code\pyspark-playground\Covercheck-Toronto\data\processed\base_nbhd_day_w158.parquet
 </pre>
 </div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>AREA_ID</th>
+<th>AREA_NAME</th>
+<th>date</th>
+<th>collision_count</th>
+<th>area_id</th>
+<th>nbhd_id</th>
+<th>area_name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>2502366</td>
+<td>South Eglinton-Davisville</td>
+<td>2014-01-01</td>
+<td>0</td>
+<td>2502366</td>
+<td>174</td>
+<td>South Eglinton-Davisville</td>
+</tr>
+<tr>
+<th>1</th>
+<td>2502366</td>
+<td>South Eglinton-Davisville</td>
+<td>2014-01-02</td>
+<td>0</td>
+<td>2502366</td>
+<td>174</td>
+<td>South Eglinton-Davisville</td>
+</tr>
+<tr>
+<th>2</th>
+<td>2502366</td>
+<td>South Eglinton-Davisville</td>
+<td>2014-01-03</td>
+<td>2</td>
+<td>2502366</td>
+<td>174</td>
+<td>South Eglinton-Davisville</td>
+</tr>
+<tr>
+<th>3</th>
+<td>2502366</td>
+<td>South Eglinton-Davisville</td>
+<td>2014-01-04</td>
+<td>0</td>
+<td>2502366</td>
+<td>174</td>
+<td>South Eglinton-Davisville</td>
+</tr>
+<tr>
+<th>4</th>
+<td>2502366</td>
+<td>South Eglinton-Davisville</td>
+<td>2014-01-05</td>
+<td>1</td>
+<td>2502366</td>
+<td>174</td>
+<td>South Eglinton-Davisville</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2c4274e41f0eb909">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h4 id="For-now-after-merging-we-have-both-AREA_NAME-and-area_name.-Not-harmful-for-now,-but-for-modelling-we-want-one-canonical-name-field-to-avoid-confusion">For now after merging we have both AREA_NAME and area_name. Not harmful for now, but for modelling we want one canonical name field to avoid confusion<a class="anchor-link" href="#For-now-after-merging-we-have-both-AREA_NAME-and-area_name.-Not-harmful-for-now,-but-for-modelling-we-want-one-canonical-name-field-to-avoid-confusion">¶</a></h4>
 </div>
 </div>
 </div>
