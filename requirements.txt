@@ -9,3 +9,7 @@ python-dotenv
 matplotlib
 plotly
 scikit-learn
+owslib
+rasterio
+meteostat
+lightgbm
