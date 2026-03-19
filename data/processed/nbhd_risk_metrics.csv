@@ -1,0 +1,2 @@
+model_name,primary_model,split_date,roc_auc,pr_auc,brier,precision_at_5,recall_at_5,precision_at_10,recall_at_10,precision_at_15,recall_at_15,train_rows,test_rows,n_features
+nbhd_risk_full_history_strict,strict,2024-01-01,0.7180621264154831,0.758726987648315,0.21235277141598458,0.9372602739726028,0.05533386227422046,0.9095890410958904,0.10728451674153468,0.8855707762557078,0.15646391512318145,575910,115340,104

@@ -13,3 +13,5 @@ owslib
 rasterio
 meteostat
 lightgbm
+seaborn
+folium

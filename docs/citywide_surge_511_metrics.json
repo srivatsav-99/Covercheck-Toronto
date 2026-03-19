@@ -1,0 +1,18 @@
+[
+  {
+    "evaluation": "full_history_split",
+    "ROC-AUC": 0.7551218161683279,
+    "PR-AUC": 0.24478126075965914,
+    "Brier-Score": 0.06637580808860462,
+    "Test_Days": 730,
+    "Train_Days": 3645
+  },
+  {
+    "evaluation": "recent_era_split_2022plus",
+    "ROC-AUC": 0.6764401963316972,
+    "PR-AUC": 0.2947229248617225,
+    "Brier-Score": 0.15695839847271262,
+    "Test_Days": 730,
+    "Train_Days": 730
+  }
+]
