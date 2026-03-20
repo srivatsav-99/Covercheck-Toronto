@@ -1,0 +1,28 @@
+[
+  {
+    "model_version": "baseline_strict_citywide_weather",
+    "roc_auc": 0.718062,
+    "pr_auc": 0.758727,
+    "brier": 0.212353,
+    "n_features": 104,
+    "Precision@5": 0.93726,
+    "Recall@5": 0.055334,
+    "Precision@10": 0.909589,
+    "Recall@10": 0.107285,
+    "Precision@15": 0.885571,
+    "Recall@15": 0.156464
+  },
+  {
+    "model_version": "micro_weather_strict",
+    "roc_auc": 0.7182449066966567,
+    "pr_auc": 0.7588219779849144,
+    "brier": 0.21225870932701604,
+    "n_features": 104,
+    "Precision@5": 0.9386301369863014,
+    "Recall@5": 0.05546441219202283,
+    "Precision@10": 0.9072602739726028,
+    "Recall@10": 0.10696909947614933,
+    "Precision@15": 0.8862100456621005,
+    "Recall@15": 0.15657721663113525
+  }
+]
