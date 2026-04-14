@@ -15,3 +15,6 @@ meteostat
 lightgbm
 seaborn
 folium
+holidays
+streamlit
+streamlit-folium folium plotly

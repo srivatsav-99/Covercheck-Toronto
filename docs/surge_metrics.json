@@ -1,0 +1,18 @@
+[
+  {
+    "model": "surge_t1",
+    "roc_auc": 0.753627,
+    "pr_auc": 0.232565,
+    "brier": 0.053002,
+    "n_test": 728,
+    "pos_rate": 0.0577
+  },
+  {
+    "model": "surge_t2",
+    "roc_auc": 0.678763,
+    "pr_auc": 0.11211,
+    "brier": 0.058479,
+    "n_test": 727,
+    "pos_rate": 0.0578
+  }
+]
