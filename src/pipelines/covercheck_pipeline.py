@@ -75,44 +75,67 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+
+
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
 #%% md
 # **Section 1: Paths & configuration**
 #%%
-REPO_ROOT = Path(__file__).resolve().parents[2]
-PROCESSED = REPO_ROOT / "data" / "processed"
-INTERIM   = REPO_ROOT / "data" / "interim"
-DOCS      = REPO_ROOT / "docs"
 
-# Public aliases for dashboard access
-PROCESSED_DIR = PROCESSED
-INTERIM_DIR = INTERIM
-DOCS_DIR = DOCS
+import sys
+from pathlib import Path
 
-DOCS.mkdir(parents=True, exist_ok=True)
+# Add the repo root to the Python path so 'src' becomes importable
+_CURRENT_ROOT = Path(__file__).resolve().parents[2]
+if str(_CURRENT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_CURRENT_ROOT))
 
-# ── input files (your existing pipeline outputs) ──────────────────────────────
-GOLD_PATH = PROCESSED / "gold_nbhd_day_weather_511.parquet"
-if not GOLD_PATH.exists():
-    fallback = PROCESSED / "gold_nbhd_day_weather.parquet"
-    if fallback.exists():
-        GOLD_PATH = fallback
-ADJ_PATH  = INTERIM   / "nbhd_adjacency.parquet"
-DIM_PATH  = INTERIM   / "dim_neighbourhoods.parquet"
+from src.io_paths import (
+    REPO_ROOT,
+    DATA_DIR,
+    RAW_DIR,
+    INTERIM_DIR,
+    PROCESSED_DIR,
+    DOCS_DIR,
+    DIM_PATH,
+    GOLD_PATH,
+    FEATURES_PATH,
+    SURGE_PRED_PATH,
+    NBHD_PRED_PATH,
+    SURGE_METRICS_PATH,
+    NBHD_METRICS_PATH,
+    COLLISION_FI_PATH,
+    KSI_FI_PATH,
+)
 
-# ── intermediate & output files ───────────────────────────────────────────────
-OSM_CACHE       = INTERIM   / "road_network_static.parquet"
-FEATURES_PATH   = PROCESSED / "features_v2.parquet"
-SURGE_PRED_PATH = PROCESSED / "surge_predictions.parquet"
-NBHD_PRED_PATH  = PROCESSED / "nbhd_predictions.parquet"
-SURGE_METRICS_PATH = DOCS   / "surge_metrics.json"
-NBHD_METRICS_PATH  = DOCS   / "nbhd_metrics.json"
+import mlflow
+import mlflow.sklearn
+from prefect import flow, task
+from src.config import (
+    MLFLOW_TRACKING_URI,
+    MLFLOW_EXPERIMENT_NAME,
+    SPLIT_DATE as _RAW_SPLIT_DATE,
+    SURGE_PCT,
+    FORECAST_HORIZONS as HORIZONS
+)
 
-# ── modelling configuration ───────────────────────────────────────────────────
-SPLIT_DATE = pd.Timestamp("2024-01-01")   # train < this date, test >= this date
-HORIZONS   = [1, 2]                       # forecast horizons in days ahead
-SURGE_PCT  = 0.90                         # top-10% city-daily total = surge day
+# Convert string date from YAML to Pandas Timestamp
+SPLIT_DATE = pd.Timestamp(_RAW_SPLIT_DATE)
+
+# Setup MLflow
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+
+# Aliases to keep the rest of your pipeline script from breaking
+PROCESSED = PROCESSED_DIR
+DOCS = DOCS_DIR
+INTERIM = INTERIM_DIR
+
+# ── intermediate files not explicitly in io_paths yet ────────────────────────
+ADJ_PATH  = INTERIM / "nbhd_adjacency.parquet"
+OSM_CACHE = INTERIM / "road_network_static.parquet"
+
 
 # ── feature engineering configuration ────────────────────────────────────────
 ROAD_COLS = [
@@ -157,6 +180,25 @@ SURGE_LEAKAGE_COLS: set[str] = _BASE_LEAKAGE | set()
 NBHD_LEAKAGE_COLS: set[str] = _BASE_LEAKAGE | {
     f"collisions_t{h}" for h in HORIZONS
 }
+
+# ── Schema Validation & Helpers ───────────────────────────────────────────────
+from src.schemas import (
+    gold_schema,
+    FeatureSchema,
+    surge_predictions_schema,
+    nbhd_predictions_schema,
+)
+
+def validate_unique_key(df, cols, name: str):
+    dupes = df.duplicated(subset=cols).sum()
+    if dupes > 0:
+        raise ValueError(f"{name} has {dupes} duplicate rows on key {cols}")
+
+def validate_expected_neighbourhoods(df, name: str, expected: int = 158):
+    n = df["nbhd_id"].nunique()
+    if n != expected:
+        raise ValueError(f"{name} has {n} unique neighbourhoods; expected {expected}")
+
 #%% md
 # **Section 2: Feature builder**
 #%%
@@ -534,6 +576,7 @@ def _build_target_columns(
 
 # ── 2 main: feature builder entry point ──────────────────────────────────────
 
+@task(name="Build Features")
 def run_feature_builder() -> pd.DataFrame:
     """
     Orchestrates all feature engineering steps and saves features_v2.parquet.
@@ -554,6 +597,11 @@ def run_feature_builder() -> pd.DataFrame:
     adj["nbhd_id"]          = adj["nbhd_id"].astype(int)
     adj["adjacent_nbhd_id"] = adj["adjacent_nbhd_id"].astype(int)
     dim["nbhd_id"]          = dim["nbhd_id"].astype(int)
+
+    #INPUT VALIDATION
+    df = gold_schema.validate(df)
+    validate_unique_key(df, ["date", "nbhd_id"], "gold input table")
+    validate_expected_neighbourhoods(df, "gold input table")
 
     # Normalise column name (older pipeline versions used collision_count)
     if "collision_count" in df.columns and "collisions" not in df.columns:
@@ -627,6 +675,11 @@ def run_feature_builder() -> pd.DataFrame:
 
     # Drop rows missing the minimum required lag features
     df = df.dropna(subset=["collisions_lag1", "collisions_roll7_mean"]).copy()
+
+    #OUTPUT VALIDATION
+    df = FeatureSchema.validate(df)
+    validate_unique_key(df, ["date", "nbhd_id"], "features output")
+    validate_expected_neighbourhoods(df, "features output")
 
     df.to_parquet(FEATURES_PATH, index=False)
     print(f"\n  Output: {df.shape[0]:,} rows × {df.shape[1]} columns")
@@ -766,11 +819,17 @@ def _train_surge_horizon(
         random_state=42,
         verbose=-1,
     )
-    model = CalibratedClassifierCV(base, cv=3, method="isotonic")
-    model.fit(X_train, y_train)
+    with mlflow.start_run(run_name=f"surge_t{horizon}", nested=True):
+        model = CalibratedClassifierCV(base, cv=3, method="isotonic")
+        model.fit(X_train, y_train)
 
-    proba = model.predict_proba(X_test)[:, 1]
-    m     = _surge_metrics(y_test, proba, label=f"surge_t{horizon}")
+        proba = model.predict_proba(X_test)[:, 1]
+        m = _surge_metrics(y_test, proba, label=f"surge_t{horizon}")
+
+        # Log to MLflow
+        mlflow.log_params({"horizon": horizon, "n_estimators": n_est, "threshold": threshold})
+        mlflow.log_metrics({"roc_auc": m['roc_auc'], "pr_auc": m['pr_auc'], "brier": m['brier']})
+        mlflow.sklearn.log_model(model, f"model_surge_t{horizon}")
     print(f"    ROC-AUC={m['roc_auc']}  PR-AUC={m['pr_auc']}  Brier={m['brier']}")
 
     pred_df = test[["date"]].copy()
@@ -780,6 +839,7 @@ def _train_surge_horizon(
     return pred_df, m
 
 
+@task(name="Train Surge Classifier")
 def run_surge_classifier() -> pd.DataFrame:
     """
     Train surge classifiers for all horizons and save surge_predictions.parquet.
@@ -809,6 +869,10 @@ def run_surge_classifier() -> pd.DataFrame:
             how="outer",
         )
     surge_pred = surge_pred.sort_values("date").reset_index(drop=True)
+
+    #OUTPUT VALIDATION
+    pred_df = surge_predictions_schema.validate(pred_df)
+    validate_unique_key(pred_df, ["date"], "surge predictions")
 
     surge_pred.to_parquet(SURGE_PRED_PATH, index=False)
     with open(SURGE_METRICS_PATH, "w") as f:
@@ -867,7 +931,7 @@ def _precision_recall_at_k(
         total_pos = g[target_col].sum()
         daily.append({
             "precision": hits / k,
-            "recall":    hits / total_pos if total_pos > 0 else np.nan,
+            "recall": hits / total_pos if total_pos > 0 else 0.0,
         })
     ddf = pd.DataFrame(daily)
     return {
@@ -1043,37 +1107,64 @@ def _train_nbhd_horizon(
     X_test  = test[xcols]
     n_est   = 200 if len(train) < 10_000 else 400
 
-    # ── Model A: collision probability ────────────────────────────────────────
-    m_col_obj = _build_lgbm_model(X_train, train[col_tgt], n_est=n_est)
-    m_col_obj.fit(X_train, train[col_tgt])
-    p_col = m_col_obj.predict_proba(X_test)[:, 1]
+    # ── Model A: Collision Forecast ──────────────────────────────────────────
+    with mlflow.start_run(run_name=f"nbhd_collision_t{horizon}", nested=True):
+        m_col_obj = _build_lgbm_model(X_train, train[col_tgt], n_est=n_est)
+        m_col_obj.fit(X_train, train[col_tgt])
+        p_col = m_col_obj.predict_proba(X_test)[:, 1]
 
-    m_col = _classification_metrics(test[col_tgt], p_col,
-                                     label=f"collision_prob_t{horizon}")
-    m_col.update(_lift_at_k(
-        test.assign(score=p_col), "score", col_tgt, ks=(5, 10, 15, 20)
-    ))
-    print(f"    Collision  ROC={m_col['roc_auc']}  PR={m_col['pr_auc']}  "
-          f"P@10={m_col.get('precision_at_10', 'N/A')}")
+        m_col = _classification_metrics(test[col_tgt], p_col, label=f"collision_prob_t{horizon}")
+        m_col.update(_lift_at_k(test.assign(score=p_col), "score", col_tgt, ks=(5, 10)))
 
-    fi_col = _extract_feature_importance(m_col_obj, xcols)
-    fi_col.to_csv(DOCS / f"fi_collision_t{horizon}.csv", index=False)
+        mlflow.log_params({"horizon": horizon, "target": "collision"})
 
-    # ── Model B: KSI severity ─────────────────────────────────────────────────
-    m_ksi_obj = _build_lgbm_model(X_train, train[ksi_tgt], n_est=n_est)
-    m_ksi_obj.fit(X_train, train[ksi_tgt])
-    p_ksi = m_ksi_obj.predict_proba(X_test)[:, 1]
+        # SAFE LOGGING
+        safe_metrics = {k: v for k, v in m_col.items() if isinstance(v, (int, float)) and not pd.isna(v)}
+        mlflow.log_metrics(safe_metrics)
 
-    m_ksi = _classification_metrics(test[ksi_tgt], p_ksi,
-                                     label=f"ksi_prob_t{horizon}")
-    m_ksi.update(_lift_at_k(
-        test.assign(score=p_ksi), "score", ksi_tgt, ks=(5, 10, 15, 20)
-    ))
-    print(f"    KSI        ROC={m_ksi['roc_auc']}  PR={m_ksi['pr_auc']}  "
-          f"P@10={m_ksi.get('precision_at_10', 'N/A')}")
+        # FIXED LOGGING: Using 'artifact_path' and 'skops'/'cloudpickle' serialization to avoid warnings
+        mlflow.sklearn.log_model(
+            m_col_obj,
+            artifact_path=f"model_nbhd_col_t{horizon}",
+            serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
+        )
 
-    fi_ksi = _extract_feature_importance(m_ksi_obj, xcols)
-    fi_ksi.to_csv(DOCS / f"fi_ksi_t{horizon}.csv", index=False)
+        # ── Model B: Serious Incident (KSI) Forecast ─────────────────────────────
+        # CONDITIONAL CHECK: Ensure we actually have positive cases to train/test against
+        total_ksi_train = train[ksi_tgt].sum()
+        total_ksi_test = test[ksi_tgt].sum()
+
+        if total_ksi_train == 0 or total_ksi_test == 0:
+            print(f"  Skipping KSI T+{horizon} evaluation — no positive samples in train/test set.")
+            # Return structurally consistent metrics for this horizon
+            m_ksi = {
+                "model": f"ksi_prob_t{horizon}",
+                "roc_auc": float("nan"),
+                "pr_auc": 0.0,
+                "brier": 0.0,
+                "precision_at_10": None,  # Defensive explicit key for summary logic
+            }
+            p_ksi = np.zeros(len(X_test))
+        else:
+            with mlflow.start_run(run_name=f"nbhd_ksi_t{horizon}", nested=True):
+                m_ksi_obj = _build_lgbm_model(X_train, train[ksi_tgt], n_est=n_est)
+                m_ksi_obj.fit(X_train, train[ksi_tgt])
+                p_ksi = m_ksi_obj.predict_proba(X_test)[:, 1]
+
+                m_ksi = _classification_metrics(test[ksi_tgt], p_ksi, label=f"ksi_prob_t{horizon}")
+
+                mlflow.log_params({"horizon": horizon, "target": "ksi"})
+
+                # SAFE LOGGING
+                safe_metrics = {k: v for k, v in m_ksi.items() if isinstance(v, (int, float)) and not pd.isna(v)}
+                mlflow.log_metrics(safe_metrics)
+
+                # FIXED LOGGING
+                mlflow.sklearn.log_model(
+                    m_ksi_obj,
+                    artifact_path=f"model_nbhd_ksi_t{horizon}",
+                    serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
+                )
 
     # ── Score C: combined risk ranking score ──────────────────────────────────
     combined = 0.6 * p_col + 0.4 * p_ksi
@@ -1086,6 +1177,7 @@ def _train_nbhd_horizon(
     return pred_df, [m_col, m_ksi]
 
 
+@task(name="Train Neighbourhood Models")
 def run_nbhd_models() -> pd.DataFrame:
     """
     Train neighbourhood models for all horizons and save nbhd_predictions.parquet.
@@ -1128,6 +1220,12 @@ def run_nbhd_models() -> pd.DataFrame:
         )
 
     result = result.sort_values(["date", "nbhd_id"]).reset_index(drop=True)
+
+    #OUTPUT VALIDATION
+    pred_df = nbhd_predictions_schema.validate(pred_df)
+    validate_unique_key(pred_df, ["date", "nbhd_id"], "neighbourhood predictions")
+    validate_expected_neighbourhoods(pred_df, "neighbourhood predictions")
+
     result.to_parquet(NBHD_PRED_PATH, index=False)
     with open(NBHD_METRICS_PATH, "w") as f:
         json.dump(all_metrics, f, indent=2)
@@ -1146,77 +1244,46 @@ def run_nbhd_models() -> pd.DataFrame:
 #%% md
 # **Section 5: Pipeline runner**
 #%%
-_STAGES: dict[str, tuple[str, callable]] = {
-    "features": ("Feature builder  (Section 2)", run_feature_builder),
-    "surge":    ("Surge classifier (Section 3)", run_surge_classifier),
-    "nbhd":     ("Neighbourhood models (Section 4)", run_nbhd_models),
-}
+# ── SECTION 5: Pipeline runner ────────────────────────────────────────────────
+@flow(name="CoverCheck Main Pipeline", log_prints=True)
+def run_pipeline_flow(start_from: str = "features", only: str | None = None):
+    """The main Prefect orchestration flow."""
 
-
-def run_pipeline(start_from: str = "features", only: str | None = None) -> None:
-    """
-    Run the full CoverCheck pipeline or a subset of stages.
-
-    Parameters
-    ----------
-    start_from : str
-        Start execution from this stage onward. Options: features, surge, nbhd.
-    only : str | None
-        Run only this single stage. Overrides start_from if set.
-    """
-    import time
-
-    if only:
-        if only not in _STAGES:
-            raise ValueError(f"Unknown stage '{only}'. "
-                             f"Valid: {list(_STAGES)}")
-        label, fn = _STAGES[only]
-        print(f"\nRunning single stage: {label}\n")
-        t0 = time.perf_counter()
-        fn()
-        print(f"Done in {time.perf_counter() - t0:.1f}s\n")
+    # Run a single stage if requested
+    if only == "features":
+        run_feature_builder()
+        return
+    elif only == "surge":
+        run_surge_classifier()
+        return
+    elif only == "nbhd":
+        run_nbhd_models()
         return
 
-    keys = list(_STAGES)
-    if start_from not in keys:
-        raise ValueError(f"Unknown stage '{start_from}'. "
-                         f"Valid: {list(_STAGES)}")
-
-    run_keys = keys[keys.index(start_from):]
-    print(f"\nCoverCheck pipeline — running stages: {run_keys}\n")
-    t_total = 0.0
-    for k in run_keys:
-        label, fn = _STAGES[k]
-        t0 = time.perf_counter()
-        fn()
-        elapsed = time.perf_counter() - t0
-        t_total += elapsed
-        print(f"  ✓ {label} — {elapsed:.1f}s\n")
-
-    print(f"Pipeline complete. Total time: {t_total:.1f}s\n")
-
+    # Otherwise, run the DAG sequentially based on start_from
+    if start_from == "features":
+        run_feature_builder()
+        run_surge_classifier()
+        run_nbhd_models()
+    elif start_from == "surge":
+        run_surge_classifier()
+        run_nbhd_models()
+    elif start_from == "nbhd":
+        run_nbhd_models()
 
 # ── CLI entry point ───────────────────────────────────────────────────────────
+import typer
+
+app = typer.Typer(help="CoverCheck Toronto — Production ML Pipeline")
+
+@app.command()
+def run(
+    start_from: str = typer.Option("features", help="Start from: features | surge | nbhd"),
+    only: str = typer.Option(None, help="Run only this stage: features | surge | nbhd")
+):
+    """Execute the CoverCheck pipeline stages."""
+    run_pipeline_flow(start_from=start_from, only=only)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="CoverCheck Toronto — full ML pipeline"
-    )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "--from",
-        dest="start_from",
-        choices=list(_STAGES),
-        default="features",
-        metavar="STAGE",
-        help="Start from this stage: features | surge | nbhd  (default: features)",
-    )
-    group.add_argument(
-        "--only",
-        choices=list(_STAGES),
-        metavar="STAGE",
-        help="Run only this stage: features | surge | nbhd",
-    )
-    args = parser.parse_args()
-    run_pipeline(start_from=args.start_from, only=args.only)
+    app()
 #%%

@@ -17,4 +17,4 @@ seaborn
 folium
 holidays
 streamlit
-streamlit-folium folium plotly
+streamlit-folium
