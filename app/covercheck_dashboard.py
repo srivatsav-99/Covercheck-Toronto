@@ -29,6 +29,7 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 from src.pipelines import covercheck_pipeline as pipeline
+from src.io_paths import ASSETS_DIR
 
 warnings.filterwarnings("ignore")
 
@@ -58,7 +59,7 @@ C_MID_BLU = "#2471A3"   # secondary     — secondary chart bars
 C_GREY    = "#9EB3C2"   # neutral grey  — bars when only some have red/green meaning
 
 G_GRID    = "rgba(41,128,185,0.07)"
-LOGO_PATH = REPO_ROOT / "assets" / "covercheck_logo.png"
+LOGO_PATH = ASSETS_DIR / "covercheck_logo.png"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -716,7 +717,7 @@ def render_sidebar() -> dict:
             last_run = pd.Timestamp.fromtimestamp(mtime).strftime("%b %d, %Y at %H:%M")
             st.caption(f"Last updated: {last_run}")
 
-        if st.button("Refresh Forecasts", type="primary", use_container_width=True):
+        if st.button("Refresh Forecasts", type="primary", use_container_width="stretch"):
             clear_and_refresh()
         st.caption("Rebuilds all forecasts from the latest data.")
 
@@ -841,7 +842,7 @@ def page_city_overview(
             #"Serious Incident Chance": "{:.1%}",
             "Expected Collisions": "{:.1f}",
         }),
-        use_container_width=True,
+        use_container_width="stretch",
         height=min(80 + top_k * 38, 480),
     )
     risk_score_legend()
@@ -900,7 +901,7 @@ def page_city_overview(
         (C_GREEN, "Below 30-day average (quieter than usual)"),
         (C_GOLD,  "30-day average line"),
     ])
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width="stretch")
 
 
     # Weather conditions
@@ -980,7 +981,7 @@ def page_risk_map(
         tip_aliases = ["Neighbourhood", "Risk Score", "Serious Incident Chance"]
         m = build_map(gdf, score_col, "Overall Risk Score", "Blues",
                       top_k_ids, tip_fields, tip_aliases)
-        map_data = st_folium(m, use_container_width=True, height=480,
+        map_data = st_folium(m, use_container_width="stretch", height=480,
                              returned_objects=["last_object_clicked_tooltip"])
 
     with col_right:
@@ -1046,7 +1047,7 @@ def page_risk_map(
                 #"Serious Incident Chance": "{:.1%}",
                 "Expected Collisions": "{:.1f}",
             }),
-            use_container_width=True, height=320)
+            use_container_width="stretch", height=320)
         risk_score_legend()
 
     # Why high risk section
@@ -1176,7 +1177,7 @@ def page_trends(features: pd.DataFrame) -> None:
             fig.update_layout(
                 xaxis=dict(tickmode="linear", dtick=1, tickangle=45),
                 yaxis_title="Total Collisions", bargap=0.2, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width="stretch")
 
         elif view == "Monthly":
             colour_legend([
@@ -1207,7 +1208,7 @@ def page_trends(features: pd.DataFrame) -> None:
             fig = chart_layout(fig, height=320)
             fig.update_layout(xaxis_title="", yaxis_title="Avg Daily Collisions",
                               bargap=0.15, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width="stretch")
             peak_m = ", ".join(sorted(top3_m, key=lambda m: month_order.index(m)))
             st.caption(f"Highest-risk months: {peak_m}.")
 
@@ -1241,7 +1242,7 @@ def page_trends(features: pd.DataFrame) -> None:
             fig = chart_layout(fig, height=300)
             fig.update_layout(xaxis_title="", yaxis_title="Avg Daily Collisions",
                               bargap=0.2, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width="stretch")
             st.caption(f"Highest-collision days: {top3_lbl}.")
 
     # Tab 2 — Weather impact
@@ -1297,7 +1298,7 @@ def page_trends(features: pd.DataFrame) -> None:
                 yaxis=dict(range=[0, wx_df["avg"].max() * 1.2],
                            gridcolor=G_GRID, linecolor=B_BORDER,
                            tickfont=dict(color=B_MUTED, size=11)))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width="stretch")
             worst = max(wx_rows[1:], key=lambda r: r["avg"], default=None)
             if worst:
                 wpct = (worst["avg"] - norm) / norm * 100
@@ -1372,7 +1373,7 @@ def page_trends(features: pd.DataFrame) -> None:
                 (C_TEAL,  "Monthly serious incident count"),
                 (C_GOLD,  "Long-term average line"),
             ])
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width="stretch")
 
             recent  = ksi_monthly.tail(12)["ksi_collisions"].mean()
             earlier = ksi_monthly.iloc[-24:-12]["ksi_collisions"].mean() \
@@ -1480,7 +1481,7 @@ def page_model_performance(
                             bgcolor="rgba(255,255,255,0.95)",
                             bordercolor=B_BORDER, borderwidth=1),
                 font=dict(color=B_DEEP))
-            st.plotly_chart(k_fig, use_container_width=True)
+            st.plotly_chart(k_fig, use_container_width="stretch")
 
     # Feature importance
     section("Top Factors Driving The Forecasts")
@@ -1510,7 +1511,7 @@ def page_model_performance(
                                title="Influence On Prediction"),
                     yaxis=dict(tickfont=dict(color=B_DEEP, size=11)),
                     font=dict(color=B_DEEP))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width="stretch")
     else:
         st.info("Factor analysis files not yet available. Run the pipeline to generate them.")
 

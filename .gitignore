@@ -208,3 +208,11 @@ __marimo__/
 
 # Ignore generated data artifacts
 data/processed/*.parquet
+
+# MLflow
+mlruns/
+mlruns.db
+
+# Caches & Interim Data
+cache/
+data/interim/
