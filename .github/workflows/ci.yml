@@ -44,7 +44,7 @@ jobs:
             libspatialindex-dev
 
       - name: Install Poetry
-        run: pip install poetry==1.8.3
+        run: pip install "poetry>=2.0,<3.0"
 
       - name: Configure Poetry
         run: poetry config virtualenvs.create false
