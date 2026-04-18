@@ -1,6 +1,6 @@
-# \# 🚀 Toronto CoverCheck
+## 🚀 Toronto CoverCheck
 
-# \## 🛡️ Spatio-Temporal Collision Risk Forecasting System
+### 🛡️ Spatio-Temporal Collision Risk Forecasting System
 
 # 
 
@@ -8,11 +8,11 @@
 
 # 
 
-# \---
+# ---
 
 # 
 
-# \## 🔥 Why This Project Matters
+### 🔥 Why This Project Matters
 
 # 
 
@@ -24,11 +24,11 @@
 
 # 
 
-# \- Weather conditions 🌧️  
+#  Weather conditions 🌧️  
 
-# \- Traffic disruptions 🚧  
+#  Traffic disruptions 🚧  
 
-# \- Historical patterns 📊  
+#  Historical patterns 📊  
 
 # 
 
@@ -40,45 +40,45 @@
 
 # 
 
-# \---
+# ---
 
 # 
 
-# \## 🧠 What This System Does
+### 🧠 What This System Does
 
 # 
 
-# \### 1. Citywide Risk Forecast
+#### 1. Citywide Risk Forecast
 
-# \- Predicts probability of collision surge (T+1, T+2)
+# Predicts probability of collision surge (T+1, T+2)
 
-# \- Helps identify high-risk days
-
-# 
-
-# \### 2. Neighbourhood Risk Ranking
-
-# \- Ranks all 158 Toronto neighbourhoods
-
-# \- Identifies Top-K high-risk zones
+# Helps identify high-risk days
 
 # 
 
-# \### 3. Interactive Risk Dashboard
+#### 2. Neighbourhood Risk Ranking
 
-# \- Visual map (Folium)
+# Ranks all 158 Toronto neighbourhoods
 
-# \- Risk distribution
-
-# \- Zone breakdown
+# Identifies Top-K high-risk zones
 
 # 
 
-# \---
+#### 3. Interactive Risk Dashboard
+
+# Visual map (Folium)
+
+# Risk distribution
+
+# Zone breakdown
 
 # 
 
-# \## 🏗️ System Architecture
+# ---
+
+# 
+
+### 🏗️ System Architecture
 
 Raw Data
 
@@ -102,53 +102,47 @@ FastAPI
 
 Streamlit Dashboard
 
+---
+
+## 📊 Data Sources
 
 
 
+- Toronto Police Collision Data  
 
-\---
+- KSI (Killed \& Seriously Injured)  
 
+- Ontario 511 Traffic Disruptions  
 
+- Weather Data (Open-Meteo)  
 
-\## 📊 Data Sources
-
-
-
-\- Toronto Police Collision Data  
-
-\- KSI (Killed \& Seriously Injured)  
-
-\- Ontario 511 Traffic Disruptions  
-
-\- Weather Data (Open-Meteo)  
-
-\- Toronto Neighbourhood Boundaries  
+- Toronto Neighbourhood Boundaries  
 
 
 
-\---
+---
 
 
 
-\## ⚙️ Machine Learning Pipeline
+## ⚙️ Machine Learning Pipeline
 
 
 
-\### 🔹 Citywide Model
+### 🔹 Citywide Model
 
-\- LightGBM
+- LightGBM
 
-\- Predicts surge probability (binary classification)
+- Predicts surge probability (binary classification)
 
-\- Time-aware validation (no leakage)
+- Time-aware validation (no leakage)
 
 
 
-\### 🔹 Neighbourhood Model
+### 🔹 Neighbourhood Model
 
-\- Predicts per-neighbourhood collision risk
+- Predicts per-neighbourhood collision risk
 
-\- Incorporates:
+- Incorporates:
 
 &#x20; - Local features
 
@@ -156,59 +150,59 @@ Streamlit Dashboard
 
 
 
-\---
+---
 
 
 
-\## 🧪 Model Evaluation
+## 🧪 Model Evaluation
 
 
 
-\- ROC-AUC  
+- ROC-AUC  
 
-\- PR-AUC  
+- PR-AUC  
 
-\- Brier Score  
+- Brier Score  
 
-\- Precision@K (business metric)  
-
-
-
-\---
+- Precision@K (business metric)  
 
 
 
-\## 🖥️ Dashboard Preview
+---
 
 
 
-\### Risk Map
-
-\- Choropleth visualization
-
-\- Top zones highlighted
+## 🖥️ Dashboard Preview
 
 
 
-\### Top Risk Zones
+### Risk Map
 
-\- Ranked table
+- Choropleth visualization
 
-\- Collision probability + expected collisions
-
-
-
-\### Zone Distribution
-
-\- High / Medium / Low segmentation
+- Top zones highlighted
 
 
 
-\---
+### Top Risk Zones
+
+- Ranked table
+
+- Collision probability + expected collisions
 
 
 
-\## 🚀 API (FastAPI)
+### Zone Distribution
+
+- High / Medium / Low segmentation
+
+
+
+---
+
+
+
+## 🚀 API (FastAPI)
 
 
 
@@ -220,29 +214,29 @@ http://localhost:8000/docs
 
 
 
-\### Endpoints
+### Endpoints
 
 
 
-\- `/health` → system status  
+- `/health` → system status  
 
-\- `/surge/latest` → citywide risk  
+- `/surge/latest` → citywide risk  
 
-\- `/neighbourhoods/topk` → top risk zones  
+- `/neighbourhoods/topk` → top risk zones  
 
-\- `/metrics` → model metrics  
-
-
-
-\---
+- `/metrics` → model metrics  
 
 
 
-\## 🐳 Run the Project (Docker)
+---
 
 
 
-\### 1. Clone repo
+## 🐳 Run the Project (Docker)
+
+
+
+### 1. Clone repo
 
 
 
@@ -254,7 +248,7 @@ cd Covercheck-Toronto
 
 
 
-\### 2. Run containers
+### 2. Run containers
 
 
 
@@ -262,7 +256,7 @@ docker compose up --build
 
 
 
-\### 3. Access
+### 3. Access
 
 
 
@@ -272,11 +266,11 @@ API → http://localhost:8000/docs
 
 
 
-\---
+---
 
 
 
-\## 🧪 Run Tests
+## 🧪 Run Tests
 
 
 
@@ -284,15 +278,15 @@ pytest -q
 
 
 
-\---
+---
 
 
 
-\## ⚡ CI Pipeline
+## ⚡ CI Pipeline
 
 
 
-\### GitHub Actions
+### GitHub Actions
 
 Automated:
 
@@ -306,105 +300,105 @@ Import checks
 
 
 
-\---
+---
 
 
 
-\## 🧩 Tech Stack
+## 🧩 Tech Stack
 
 
 
-\### ML \& Data
+### ML & Data
 
 
 
-\- Python
+- Python
 
-\- pandas / numpy
+- pandas / numpy
 
-\- LightGBM
-
-
-
-\### Geospatial
+- LightGBM
 
 
 
-\- GeoPandas
-
-\- Folium
+### Geospatial
 
 
 
-\### Backend
+- GeoPandas
+
+- Folium
 
 
 
-\- FastAPI
+### Backend
+
+
+
+- FastAPI
 
 
 
 Frontend
 
-\- Streamlit
+- Streamlit
 
 
 
-\### DevOps
+### DevOps
 
 
 
-\- Docker
+- Docker
 
-\- GitHub Actions (CI)
-
-
-
-\---
+- GitHub Actions (CI)
 
 
 
-\## ⚠️ Limitations
+---
 
 
 
-\- Static data (no real-time ingestion yet)
-
-\- No scheduled retraining
-
-\- Single-machine deployment
+## ⚠️ Limitations
 
 
 
-\---
+- Static data (no real-time ingestion yet)
+
+- No scheduled retraining
+
+- Single-machine deployment
 
 
 
-\## 🚀 Future Work
+---
 
 
 
-\- Real-time data ingestion
-
-\- Automated daily refresh (Prefect)
-
-\- Azure deployment
-
-\- Model monitoring
+## 🚀 Future Work
 
 
 
-\---
+- Real-time data ingestion
+
+- Automated daily refresh (Prefect)
+
+- Azure deployment
+
+- Model monitoring
 
 
 
-\## 👨‍💻 Author
+---
+
+
+
+## 👨‍💻 Author
 
 
 
 Srivatsav Shrikanth
 
-Machine Learning \& Data Analytics
+Machine Learning & Data Analytics
 
 
 
