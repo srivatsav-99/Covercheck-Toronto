@@ -1,0 +1,34 @@
+
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: covercheck-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./docs:/app/docs
+      - ./assets:/app/assets
+      - ./config:/app/config
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: covercheck-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: "http://api:8000"
+    depends_on:
+      - api
+    volumes:
+      - ./data:/app/data
+      - ./docs:/app/docs
+      - ./assets:/app/assets
+      - ./config:/app/config
+    restart: unless-stopped

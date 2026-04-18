@@ -39,7 +39,8 @@ from src.io_paths import (
 warnings.filterwarnings("ignore")
 
 # ── API Configuration ────────────────────────────────────────────────────────
-API_BASE_URL = "http://127.0.0.1:8000"
+import os
+API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 REQUEST_TIMEOUT = 15
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -636,11 +637,26 @@ def build_map(
     gdf: gpd.GeoDataFrame,
     score_col: str,
     legend_name: str,
-    colour_scale: str,
+    colour_scale: str = "Blues",
     top_k_ids: list[int] | None = None,
     tip_fields: list[str] | None = None,
     tip_aliases: list[str] | None = None,
 ) -> folium.Map:
+    import branca.colormap as bcm
+
+    gdf = gdf.copy()
+
+    # Ensure CRS is correct for Folium
+    if gdf.crs is None:
+        gdf = gdf.set_crs(epsg=4326)
+    else:
+        gdf = gdf.to_crs(epsg=4326)
+
+    # Clean score column
+    gdf[score_col] = pd.to_numeric(gdf[score_col], errors="coerce")
+    gdf[score_col] = gdf[score_col].fillna(0)
+
+    # Map center
     m = folium.Map(
         location=[43.72, -79.38],
         zoom_start=11,
@@ -648,52 +664,64 @@ def build_map(
         prefer_canvas=True,
     )
 
-    folium.Choropleth(
-        geo_data=gdf.__geo_interface__,
-        data=gdf,
-        columns=["nbhd_id", score_col],
-        key_on="feature.properties.nbhd_id",
-        fill_color=colour_scale,
-        fill_opacity=0.72,
-        line_opacity=0.28,
-        line_weight=0.8,
-        legend_name=legend_name,
-        nan_fill_color="#D6EAF8",
-    ).add_to(m)
+    # Manual colormap instead of folium.Choropleth
+    vmin = float(gdf[score_col].min())
+    vmax = float(gdf[score_col].max())
+    if vmin == vmax:
+        vmax = vmin + 1e-6
+
+    cmap = bcm.linear.Blues_09.scale(vmin, vmax)
+    cmap.caption = legend_name
+    cmap.add_to(m)
 
     tf = tip_fields or ["area_name", score_col]
     ta = tip_aliases or ["Neighbourhood", legend_name]
 
+    def style_function(feature):
+        props = feature["properties"]
+        val = props.get(score_col, 0)
+        try:
+            val = float(val)
+        except (TypeError, ValueError):
+            val = 0.0
+        return {
+            "fillColor": cmap(val),
+            "color": "#5D6D7E",
+            "weight": 0.8,
+            "fillOpacity": 0.72,
+        }
+
     folium.GeoJson(
-        gdf.__geo_interface__,
+        gdf,
+        style_function=style_function,
         tooltip=folium.GeoJsonTooltip(
             fields=tf,
             aliases=ta,
             localize=True,
             sticky=False,
-            style="font-size:12px; font-family:Arial,sans-serif;",
+            labels=True,
+            style=(
+                "background-color: white; color: #1A2E44; "
+                "font-family: Arial; font-size: 12px; padding: 8px;"
+            ),
         ),
-        style_function=lambda x: {"fillOpacity": 0, "weight": 0, "color": "transparent"},
     ).add_to(m)
 
+    # Outline top-k zones
     if top_k_ids:
-        folium.GeoJson(
-            gdf[gdf["nbhd_id"].isin(top_k_ids)].__geo_interface__,
-            style_function=lambda x: {
-                "fillOpacity": 0,
-                "weight": 3,
-                "color": C_RED,
-                "dashArray": "5 3",
-            },
-            tooltip=folium.GeoJsonTooltip(
-                fields=tf,
-                aliases=ta,
-                style="font-size:12px; font-weight:700;",
-            ),
-        ).add_to(m)
+        top_gdf = gdf[gdf["nbhd_id"].isin(top_k_ids)].copy()
+        if not top_gdf.empty:
+            folium.GeoJson(
+                top_gdf,
+                style_function=lambda feature: {
+                    "fillOpacity": 0,
+                    "color": C_RED,
+                    "weight": 3,
+                    "dashArray": "5 3",
+                },
+            ).add_to(m)
 
     return m
-
 
 def why_high_risk(nbhd_id: int, features: pd.DataFrame) -> list[tuple[str, str]]:
     if features.empty:
@@ -1226,6 +1254,7 @@ def page_risk_map(dim: gpd.GeoDataFrame, features: pd.DataFrame, nbhd: pd.DataFr
 
     col_map, col_right = st.columns([3, 2])
 
+
     with col_map:
         section(f"Risk Map — Top {top_k} Zones Outlined In Red")
         colour_legend(
@@ -1238,7 +1267,6 @@ def page_risk_map(dim: gpd.GeoDataFrame, features: pd.DataFrame, nbhd: pd.DataFr
         )
         st.caption("Click a neighbourhood to inspect its detailed profile.")
 
-        # Dynamically build tooltips based on what columns exist
         tip_fields = ["area_name", score_col]
         tip_aliases = ["Neighbourhood", "Risk Score"]
         if prob_col in gdf.columns:
@@ -1254,10 +1282,11 @@ def page_risk_map(dim: gpd.GeoDataFrame, features: pd.DataFrame, nbhd: pd.DataFr
             tip_fields,
             tip_aliases,
         )
+
         map_data = st_folium(
             m,
-            width=None,
-            height=480,
+            width=900,
+            height=520,
             returned_objects=["last_object_clicked_tooltip"],
         )
 

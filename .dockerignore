@@ -1,0 +1,60 @@
+# =========================
+# Python / Cache
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# Virtual env / secrets
+# =========================
+.venv/
+.env
+.env.*
+
+# =========================
+# Git / Editor
+# =========================
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# LARGE DATA (DO NOT BAKE INTO IMAGE)
+# =========================
+data/raw/
+data/interim/
+data/processed/
+
+# MLflow artifacts
+mlruns/
+mlruns.db
+
+# Optional logs / temp
+*.log
+tmp/
+cache/
+
+# =========================
+# KEEP THESE (DO NOT IGNORE)
+# =========================
+# data/ (root folder stays, contents mounted)
+# docs/ (needed for dashboard history)
+# assets/
+# config/
