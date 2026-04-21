@@ -1,0 +1,62 @@
+name: CoverCheck CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - integration/**
+      - feature/**
+  pull_request:
+    branches:
+      - main
+      - master
+      - integration/**
+      - feature/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            gcc \
+            g++ \
+            curl \
+            libgdal-dev \
+            gdal-bin \
+            libgeos-dev \
+            libproj-dev \
+            proj-data \
+            proj-bin \
+            libspatialindex-dev
+
+      - name: Install Poetry
+        run: pip install "poetry>=2.0,<3.0"
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi --no-root
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Validate FastAPI import
+        run: python -c "import app.api"
+
+      - name: Validate Streamlit import
+        run: python -c "import app.covercheck_dashboard"
