@@ -1,404 +1,270 @@
 ## 🚀 Toronto CoverCheck
-
 ### 🛡️ Spatio-Temporal Collision Risk Forecasting System
 
-# 
+Predicts citywide accident surges and identifies high-risk neighbourhoods in Toronto using machine learning, real-world data, and production-grade engineering.
 
-# Predicts citywide accident surges and identifies high-risk neighbourhoods in Toronto using machine learning, real-world data, and production-grade engineering.
+---
 
-# 
+## 🔥 Why This Project Matters
 
-# ---
+Road accidents are not random.
 
-# 
+They are driven by:
 
-### 🔥 Why This Project Matters
+- Weather conditions 🌧️  
+- Traffic disruptions 🚧  
+- Historical patterns 📊  
 
-# 
+This system answers:
 
-# Road accidents are not random.
+> **“Where are accidents most likely to happen tomorrow?”**
 
-# 
+---
 
-# They are driven by:
+## 🎯 Business Impact
 
-# 
+This system can be used by:
 
-#  Weather conditions 🌧️  
+- 🚓 City planners → identify high-risk zones proactively
+- 🚑 Emergency services → optimize resource allocation
+- 🚧 Traffic management teams → anticipate disruption impact
+- 🏢 Insurance companies → risk-based pricing models
 
-#  Traffic disruptions 🚧  
+Instead of reacting to accidents, this system enables:
+Proactive risk mitigation and smarter urban planning
 
-#  Historical patterns 📊  
+---
 
-# 
+## 🧠 What This System Does
 
-# This system answers:
+### 1. Citywide Risk Forecast
+- Predicts probability of collision surge (T+1, T+2)
+- Helps identify high-risk days
 
-# 
+### 2. Neighbourhood Risk Ranking
+- Ranks all 158 Toronto neighbourhoods
+- Identifies Top-K high-risk zones
 
-# > \*\*“Where are accidents most likely to happen tomorrow?”\*\*
+### 3. Interactive Risk Dashboard
+- Visual map (Folium)
+- Risk distribution
+- Zone breakdown
 
-# 
+---
 
-# ---
-
-# 
-
-### 🧠 What This System Does
-
-# 
-
-#### 1. Citywide Risk Forecast
-
-# Predicts probability of collision surge (T+1, T+2)
-
-# Helps identify high-risk days
-
-# 
-
-#### 2. Neighbourhood Risk Ranking
-
-# Ranks all 158 Toronto neighbourhoods
-
-# Identifies Top-K high-risk zones
-
-# 
-
-#### 3. Interactive Risk Dashboard
-
-# Visual map (Folium)
-
-# Risk distribution
-
-# Zone breakdown
-
-# 
-
-# ---
-
-# 
-
-### 🏗️ System Architecture
+## 🏗️ System Architecture
 
 Raw Data
-
 ↓
-
 Feature Engineering
-
 ↓
-
 ML Models
-
 ↓
-
 Parquet Artifacts
-
 ↓
-
 FastAPI
-
 ↓
-
 Streamlit Dashboard
+
 
 ---
 
 ## 📊 Data Sources
 
-
-
 - Toronto Police Collision Data  
-
-- KSI (Killed \& Seriously Injured)  
-
+- KSI (Killed & Seriously Injured)  
 - Ontario 511 Traffic Disruptions  
-
 - Weather Data (Open-Meteo)  
-
 - Toronto Neighbourhood Boundaries  
 
-
-
 ---
-
-
 
 ## ⚙️ Machine Learning Pipeline
 
-
-
 ### 🔹 Citywide Model
-
 - LightGBM
-
 - Predicts surge probability (binary classification)
-
 - Time-aware validation (no leakage)
 
-
-
 ### 🔹 Neighbourhood Model
-
 - Predicts per-neighbourhood collision risk
-
 - Incorporates:
-
-&#x20; - Local features
-
-&#x20; - Global “surge tide” signal
-
-
+  - Local features
+  - Global “surge tide” signal
 
 ---
-
-
 
 ## 🧪 Model Evaluation
 
-
-
 - ROC-AUC  
-
 - PR-AUC  
-
 - Brier Score  
-
 - Precision@K (business metric)  
 
-
-
 ---
-
-
 
 ## 🖥️ Dashboard Preview
 
-
-
 ### Risk Map
-
 - Choropleth visualization
-
 - Top zones highlighted
 
-
-
 ### Top Risk Zones
-
 - Ranked table
-
 - Collision probability + expected collisions
 
-
-
 ### Zone Distribution
-
 - High / Medium / Low segmentation
-
-
 
 ---
 
+## 📸 Screenshots
 
+### Dashboard - Overview
+
+[Download Project Report](assets/dashboard_overview.pdf)
+
+### Dashboard - Risk Map
+
+[View Screenshot](assets/dashboard_RiskMap.jpg)
+
+### Dashboard - Trend & Seasonality
+
+[View Screenshot](assets/dashboard_Trend&Seasonality.jpg)
+
+### Dashboard - Model Performance
+
+[View Screenshot](assets/dashboard_ModelPerformance.jpg)
+
+### FastAPI - Swagger UI
+
+[Download Project Report](assets/FastAPI_SwaggerUI.pdf)
+
+### Docker Desktop Container
+
+[Download Project Report](assets/DockerContainer.pdf)
+
+### Bash Commands for Docker compose and close
+
+[View Screenshot](assets/BashTerminalForRunningDocker.jpg)
+
+[View Screenshot](assets/BashTerminalForClosingDocker.jpg)
+
+---
 
 ## 🚀 API (FastAPI)
 
-
-
-Available at:
-
+Available at:  
 http://localhost:8000/docs
-
-
-
-
 
 ### Endpoints
 
-
-
 - `/health` → system status  
-
 - `/surge/latest` → citywide risk  
-
 - `/neighbourhoods/topk` → top risk zones  
-
 - `/metrics` → model metrics  
 
-
-
 ---
-
-
 
 ## 🐳 Run the Project (Docker)
 
-
-
 ### 1. Clone repo
-
-
-
 ```bash
-
 git clone https://github.com/<your-username>/Covercheck-Toronto.git
-
 cd Covercheck-Toronto
-
-
+```
 
 ### 2. Run containers
-
-
-
+```bash
 docker compose up --build
-
-
+```
 
 ### 3. Access
-
-
-
-Dashboard → http://localhost:8501
-
-API → http://localhost:8000/docs
-
-
+- Dashboard → http://localhost:8501
+- API → http://localhost:8000/docs
 
 ---
-
-
 
 ## 🧪 Run Tests
 
-
-
+```bash
 pytest -q
-
-
+```
 
 ---
 
-
-
 ## ⚡ CI Pipeline
-
-
 
 ### GitHub Actions
 
 Automated:
 
-
-
-Tests
-
-Dependency validation
-
-Import checks
-
-
+- Tests
+- Dependency validation
+- Import checks
 
 ---
-
-
 
 ## 🧩 Tech Stack
 
-
-
 ### ML & Data
-
-
-
 - Python
-
 - pandas / numpy
-
 - LightGBM
 
-
-
 ### Geospatial
-
-
-
 - GeoPandas
-
 - Folium
 
-
-
 ### Backend
-
-
-
 - FastAPI
-
-
-
-Frontend
-
+- Frontend
 - Streamlit
 
-
-
 ### DevOps
-
-
-
 - Docker
-
 - GitHub Actions (CI)
-
-
 
 ---
 
+## 🧠 What Makes This Project Different
 
+Most ML projects:
+
+- Train a model
+- Show accuracy
+- Stop there
+
+This project goes further:
+
+✅ End-to-end ML pipeline
+✅ Real-world messy data integration
+✅ Spatio-temporal modeling
+✅ API + dashboard serving layer
+✅ Dockerized deployment
+✅ CI pipeline (GitHub Actions)
+
+👉 This is built like a production ML system, not a notebook project.
+
+---
 
 ## ⚠️ Limitations
 
-
-
 - Static data (no real-time ingestion yet)
-
 - No scheduled retraining
-
 - Single-machine deployment
 
-
-
 ---
-
-
 
 ## 🚀 Future Work
 
-
-
 - Real-time data ingestion
-
 - Automated daily refresh (Prefect)
-
 - Azure deployment
-
 - Model monitoring
-
-
 
 ---
 
-
-
 ## 👨‍💻 Author
-
-
-
 Srivatsav Shrikanth
-
 Machine Learning & Data Analytics
-
-
-

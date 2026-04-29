@@ -57,9 +57,9 @@ def test_surge_probabilities_in_range(surge_df):
 
 
 def test_nbhd_risk_scores_in_range(nbhd_df):
-    """Ensure the final risk scores are between 0 and 1."""
-    assert nbhd_df["risk_score_t1"].between(0, 1).all(), "T+1 risk score out of bounds"
-    assert nbhd_df["risk_score_t2"].between(0, 1).all(), "T+2 risk score out of bounds"
+    """Ensure final risk scores are between 0 and 1, allowing end-of-series T+2 nulls."""
+    assert nbhd_df["risk_score_t1"].dropna().between(0, 1).all(), "T+1 risk score out of bounds"
+    assert nbhd_df["risk_score_t2"].dropna().between(0, 1).all(), "T+2 risk score out of bounds"
 
 
 def test_no_future_leakage(features_df):

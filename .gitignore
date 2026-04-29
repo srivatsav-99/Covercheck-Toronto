@@ -216,3 +216,6 @@ mlruns.db
 # Caches & Interim Data
 cache/
 data/interim/
+
+models/*.pkl
+models/**/*.pkl
