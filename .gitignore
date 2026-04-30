@@ -225,3 +225,15 @@ mlflow.db
 
 # Candidate model binaries
 models/registry/**/candidates/**/model.pkl
+
+# ML artifacts
+models/registry/*/candidates/
+
+# Monitoring outputs
+docs/mlops/monitoring_report.json
+
+# MLflow local DB
+mlflow.db
+
+# Pipeline temp outputs (optional future-proof)
+*.parquet
