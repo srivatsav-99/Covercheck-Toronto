@@ -1,54 +1,51 @@
-## 🚀 Toronto CoverCheck
-### 🛡️ Spatio-Temporal Collision Risk Forecasting System
+# 🚀 Toronto CoverCheck
+## 🛡️ End-to-End Collision Risk Forecasting System (ML + MLOps + Deployment)
 
-Predicts citywide accident surges and identifies high-risk neighbourhoods in Toronto using machine learning, real-world data, and production-grade engineering.
+A production-style machine learning system that predicts **citywide collision surges** and identifies **high-risk neighbourhoods in Toronto**, deployed using **FastAPI + Streamlit + Docker + Azure**.
 
 ---
 
-## 🔥 Why This Project Matters
+## 🔥 Why This Project Exists
 
-Road accidents are not random.
-
-They are driven by:
+Road accidents are not random — they are driven by:
 
 - Weather conditions 🌧️  
 - Traffic disruptions 🚧  
-- Historical patterns 📊  
+- Temporal patterns 📊  
 
-This system answers:
+This system answers a real-world question:
 
-> **“Where are accidents most likely to happen tomorrow?”**
-
----
-
-## 🎯 Business Impact
-
-This system can be used by:
-
-- 🚓 City planners → identify high-risk zones proactively
-- 🚑 Emergency services → optimize resource allocation
-- 🚧 Traffic management teams → anticipate disruption impact
-- 🏢 Insurance companies → risk-based pricing models
-
-Instead of reacting to accidents, this system enables:
-Proactive risk mitigation and smarter urban planning
+> **“Where and when are collisions most likely to happen tomorrow?”**
 
 ---
 
-## 🧠 What This System Does
+## 🎯 Real-World Impact
+
+This system enables **proactive decision-making** for:
+
+- 🚓 Emergency services → resource allocation  
+- 🚧 Traffic management → disruption planning  
+- 🏢 Insurance companies → risk modeling  
+- 🏙️ City planners → safer infrastructure  
+
+👉 Moves from **reactive response → predictive risk management**
+
+---
+
+## 🧠 What the System Does
 
 ### 1. Citywide Risk Forecast
-- Predicts probability of collision surge (T+1, T+2)
-- Helps identify high-risk days
+- Predicts probability of a **collision surge (T+1, T+2)**
+- Identifies high-risk days before they occur
 
 ### 2. Neighbourhood Risk Ranking
-- Ranks all 158 Toronto neighbourhoods
-- Identifies Top-K high-risk zones
+- Scores all **158 Toronto neighbourhoods**
+- Produces **Top-K high-risk zones**
 
-### 3. Interactive Risk Dashboard
-- Visual map (Folium)
-- Risk distribution
-- Zone breakdown
+### 3. Interactive Dashboard
+- Geospatial risk map (Folium)
+- Risk segmentation (High / Medium / Low)
+- Trend + performance insights
 
 ---
 
@@ -58,13 +55,13 @@ Raw Data
 ↓
 Feature Engineering
 ↓
-ML Models
+ML Models (LightGBM)
 ↓
 Parquet Artifacts
 ↓
-FastAPI
+FastAPI (Serving Layer)
 ↓
-Streamlit Dashboard
+Streamlit Dashboard (Visualization)
 
 
 ---
@@ -82,189 +79,143 @@ Streamlit Dashboard
 ## ⚙️ Machine Learning Pipeline
 
 ### 🔹 Citywide Model
-- LightGBM
-- Predicts surge probability (binary classification)
+- LightGBM classifier  
+- Predicts **surge probability**  
 - Time-aware validation (no leakage)
 
 ### 🔹 Neighbourhood Model
-- Predicts per-neighbourhood collision risk
-- Incorporates:
-  - Local features
-  - Global “surge tide” signal
+- Predicts **collision risk per neighbourhood**
+- Combines:
+  - Local features  
+  - Global “surge signal”
 
 ---
 
-## 🧪 Model Evaluation
+## 📈 Model Performance
 
-- ROC-AUC  
-- PR-AUC  
-- Brier Score  
-- Precision@K (business metric)  
+| Metric | Value |
+|------|------|
+| ROC-AUC | ~0.72 |
+| PR-AUC | ~0.75 |
+| Precision@10 | ~0.90 |
+| Brier Score | ~0.21 |
+
+👉 High Precision@K = strong real-world usefulness
 
 ---
 
-## 🖥️ Dashboard Preview
+## 🖥️ Dashboard Features
 
-### Risk Map
-- Choropleth visualization
-- Top zones highlighted
+- 📍 Interactive risk map (GeoSpatial)
+- 📊 Top risk zones ranking
+- 📉 Trend & seasonality analysis
+- 📦 Model performance tracking
 
-### Top Risk Zones
-- Ranked table
-- Collision probability + expected collisions
+---
 
-### Zone Distribution
-- High / Medium / Low segmentation
+## 🚀 Deployment Architecture
+
+- 🐳 Dockerized services (API + Dashboard)
+- ⚡ FastAPI serving layer
+- 🎛️ Streamlit frontend
+- ☁️ Azure Container Apps deployment
+- 📦 Slim artifact optimization for performance
 
 ---
 
 ## 📸 Screenshots
 
-### Dashboard - Overview
+- Risk Map  
+- Trends  
+- Model Performance  
+- API Swagger UI  
 
-[Download Project Report](assets/dashboard_overview.pdf)
-
-### Dashboard - Risk Map
-
-[View Screenshot](assets/dashboard_RiskMap.jpg)
-
-### Dashboard - Trend & Seasonality
-
-[View Screenshot](assets/dashboard_Trend&Seasonality.jpg)
-
-### Dashboard - Model Performance
-
-[View Screenshot](assets/dashboard_ModelPerformance.jpg)
-
-### FastAPI - Swagger UI
-
-[Download Project Report](assets/FastAPI_SwaggerUI.pdf)
-
-### Docker Desktop Container
-
-[Download Project Report](assets/DockerContainer.pdf)
-
-### Bash Commands for Docker compose and close
-
-[View Screenshot](assets/BashTerminalForRunningDocker.jpg)
-
-[View Screenshot](assets/BashTerminalForClosingDocker.jpg)
+*(See /assets folder)*
 
 ---
 
-## 🚀 API (FastAPI)
+## 🔌 API (FastAPI)
 
-Available at:  
-http://localhost:8000/docs
-
-### Endpoints
+Endpoints:
 
 - `/health` → system status  
-- `/surge/latest` → citywide risk  
-- `/neighbourhoods/topk` → top risk zones  
-- `/metrics` → model metrics  
+- `/surge/latest` → citywide forecast  
+- `/neighbourhoods/topk` → risk zones  
+- `/metrics` → model performance  
 
 ---
 
-## 🐳 Run the Project (Docker)
+## 🐳 Run Locally
 
-### 1. Clone repo
 ```bash
 git clone https://github.com/<your-username>/Covercheck-Toronto.git
 cd Covercheck-Toronto
-```
-
-### 2. Run containers
-```bash
 docker compose up --build
 ```
 
-### 3. Access
+### Access
 - Dashboard → http://localhost:8501
 - API → http://localhost:8000/docs
-
----
-
-## 🧪 Run Tests
-
-```bash
-pytest -q
-```
-
----
-
-## ⚡ CI Pipeline
-
-### GitHub Actions
-
-Automated:
-
-- Tests
-- Dependency validation
-- Import checks
 
 ---
 
 ## 🧩 Tech Stack
 
 ### ML & Data
-- Python
-- pandas / numpy
+- Python, pandas, numpy
 - LightGBM
 
 ### Geospatial
-- GeoPandas
-- Folium
+- GeoPandas, Folium
 
 ### Backend
 - FastAPI
-- Frontend
+
+### Frontend
 - Streamlit
 
 ### DevOps
 - Docker
-- GitHub Actions (CI)
+- Azure Container Apps
+- GitHub Actions
 
 ---
 
-## 🧠 What Makes This Project Different
+## 🧠 What Makes This Different
 
-Most ML projects:
+Most ML projects stop at modeling.
 
-- Train a model
-- Show accuracy
-- Stop there
+This system includes:
 
-This project goes further:
-
-✅ End-to-end ML pipeline
-✅ Real-world messy data integration
+✅ End-to-end pipeline
+✅ Real-world data integration
 ✅ Spatio-temporal modeling
-✅ API + dashboard serving layer
-✅ Dockerized deployment
-✅ CI pipeline (GitHub Actions)
+✅ API serving layer
+✅ Interactive dashboard
+✅ Cloud deployment
 
-👉 This is built like a production ML system, not a notebook project.
+👉 Built like a production ML system, not a notebook.
 
 ---
 
 ## ⚠️ Limitations
 
-- Static data (no real-time ingestion yet)
-- No scheduled retraining
-- Single-machine deployment
+- No real-time streaming
+- No automated retraining yet
+- Single-region deployment
 
----
+--- 
 
 ## 🚀 Future Work
 
-- Real-time data ingestion
-- Automated daily refresh (Prefect)
-- Azure deployment
-- Model monitoring
+- Real-time ingestion (streaming pipelines)
+- MLOps (MLflow, monitoring, retraining)
+- CI/CD automation
+- Multi-region deployment
 
 ---
 
 ## 👨‍💻 Author
-Srivatsav Shrikanth
-Machine Learning & Data Analytics
+
+- Srivatsav Shrikanth
+- Machine Learning | Data Analytics | MLOps
