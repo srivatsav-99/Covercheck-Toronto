@@ -32,6 +32,9 @@ COPY app ./app
 COPY src ./src
 COPY config ./config
 COPY assets ./assets
+COPY docs ./docs
+COPY data/processed ./data/processed
+COPY models ./models
 
 EXPOSE 8000
 
