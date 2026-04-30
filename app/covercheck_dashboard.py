@@ -32,6 +32,8 @@ from src.io_paths import (
     ASSETS_DIR,
     FEATURES_PATH,
     NBHD_PRED_PATH,
+    DASHBOARD_FEATURES_PATH,
+    DASHBOARD_NBHD_LATEST_PATH,
     DIM_PATH,
     COLLISION_FI_PATH,
 )
@@ -40,8 +42,12 @@ warnings.filterwarnings("ignore")
 
 # ── API Configuration ────────────────────────────────────────────────────────
 import os
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
-REQUEST_TIMEOUT = 15
+
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "http://127.0.0.1:8000"  # fallback for local
+)
+REQUEST_TIMEOUT = 30
 
 # ══════════════════════════════════════════════════════════════════════════════
 # COLOUR PALETTE
@@ -412,10 +418,12 @@ def api_get_metrics():
 # ══════════════════════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner=False)
 def load_features():
-    if not FEATURES_PATH.exists():
+    path = DASHBOARD_FEATURES_PATH if DASHBOARD_FEATURES_PATH.exists() else FEATURES_PATH
+
+    if not path.exists():
         return pd.DataFrame()
 
-    df = pd.read_parquet(FEATURES_PATH).copy()
+    df = pd.read_parquet(path).copy()
     if "date" in df.columns:
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
     if "nbhd_id" in df.columns:
@@ -427,10 +435,12 @@ def load_features():
 
 @st.cache_data(show_spinner=False)
 def load_nbhd():
-    if not NBHD_PRED_PATH.exists():
+    path = DASHBOARD_NBHD_LATEST_PATH if DASHBOARD_NBHD_LATEST_PATH.exists() else NBHD_PRED_PATH
+
+    if not path.exists():
         return pd.DataFrame()
 
-    df = pd.read_parquet(NBHD_PRED_PATH).copy()
+    df = pd.read_parquet(path).copy()
     if "date" in df.columns:
         df["date"] = pd.to_datetime(df["date"], errors="coerce")
     if "nbhd_id" in df.columns:
@@ -968,6 +978,7 @@ def render_sidebar() -> dict:
         page = st.radio(
             "Pages",
             ["City Overview", "Risk Map", "Trends And Seasonality", "Model Performance"],
+            index=3,
             label_visibility="collapsed",
         )
 
@@ -1821,19 +1832,22 @@ def main() -> None:
     top_k = controls["top_k"]
     page = controls["page"]
 
-    features = load_features()
-    nbhd = load_nbhd()
-    dim = load_dim()
-
     if page == "City Overview":
+        features = load_features()
         page_city_overview(features, horizon, top_k)
+
     elif page == "Risk Map":
+        features = load_features()
+        nbhd = load_nbhd()
+        dim = load_dim()
         page_risk_map(dim, features, nbhd, horizon, top_k)
+
     elif page == "Trends And Seasonality":
+        features = load_features()
         page_trends(features)
+
     elif page == "Model Performance":
         page_model_performance(horizon)
-
 
 if __name__ == "__main__":
     main()

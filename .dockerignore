@@ -58,3 +58,17 @@ cache/
 # docs/ (needed for dashboard history)
 # assets/
 # config/
+
+# Keep runtime artifacts needed inside Azure images
+!data/
+!data/processed/
+!data/processed/features_v2.parquet
+!data/processed/surge_predictions.parquet
+!data/processed/nbhd_predictions.parquet
+!data/processed/dim_neighbourhoods.parquet
+
+!models/
+!models/citywide_model.pkl
+!models/nbhd_collision_model.pkl
+!data/interim/
+!data/interim/dim_neighbourhoods.parquet

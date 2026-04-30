@@ -26,3 +26,6 @@ NBHD_METRICS_PATH = DOCS_DIR / "nbhd_metrics.json"
 
 COLLISION_FI_PATH = DOCS_DIR / "collision_feature_importance.csv"
 KSI_FI_PATH = DOCS_DIR / "ksi_feature_importance.csv"
+
+DASHBOARD_FEATURES_PATH = PROCESSED_DIR / "dashboard_features_slim.parquet"
+DASHBOARD_NBHD_LATEST_PATH = PROCESSED_DIR / "dashboard_nbhd_latest.parquet"
