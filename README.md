@@ -1,7 +1,7 @@
 # 🚀 Toronto CoverCheck
 ## 🛡️ End-to-End Collision Risk Forecasting System (ML + MLOps + Deployment)
 
-A production-style machine learning system that predicts **citywide collision surges** and identifies **high-risk neighbourhoods in Toronto**, deployed using **FastAPI + Streamlit + Docker + Azure**.
+A production-style machine learning system that predicts citywide collision surges and ranks high-risk neighbourhoods in Toronto, built with full MLOps lifecycle support including training, model governance, monitoring, and deployment.
 
 ---
 
@@ -32,7 +32,7 @@ This system enables **proactive decision-making** for:
 
 ---
 
-## 🧠 What the System Does
+## 🧠 System Capabilities
 
 ### 1. Citywide Risk Forecast
 - Predicts probability of a **collision surge (T+1, T+2)**
@@ -49,20 +49,99 @@ This system enables **proactive decision-making** for:
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ End-to-End ML Architecture
 
 Raw Data
-↓
+   ↓
 Feature Engineering
-↓
-ML Models (LightGBM)
-↓
-Parquet Artifacts
-↓
+   ↓
+Training Pipeline (MLflow)
+   ↓
+Model Registry (Champion / Candidate)
+   ↓
+Promotion Logic (Metric Guardrails)
+   ↓
+Scoring Pipeline
+   ↓
+Monitoring (Drift + Freshness)
+   ↓
 FastAPI (Serving Layer)
-↓
-Streamlit Dashboard (Visualization)
+   ↓
+Streamlit Dashboard
 
+---
+
+## ⚙️ MLOps System (Core Highlight)
+
+This project includes a full ML lifecycle system, not just modeling.
+
+### 1. Training Pipeline
+- Automated candidate model training
+- MLflow experiment tracking
+- Metric logging (ROC-AUC, PR-AUC, Precision@K)
+
+### 2. Model Registry
+- Structured registry:
+```text
+models/registry/
+    citywide/champion
+    neighbourhood_collision/champion
+    candidates/<timestamp>
+```
+
+- Tracks:
+-- model artifacts
+-- metadata (metrics, features, version)
+
+### 3. Safe Model Promotion
+
+- Candidate replaces production model ONLY IF it outperforms champion
+```text
+"precision_at_10": 0.815
+"champion_precision_at_10": 0.90
+"promoted": false
+```
+👉 Prevents bad models from reaching production
+
+### 4. Scoring Pipeline
+
+- Uses champion model only
+- Generates:
+-- citywide predictions
+-- neighbourhood predictions
+
+### 5. Monitoring System
+
+Tracks:
+
+#### 📊 Data Drift
+- Feature distribution monitoring
+
+#### 📉 Prediction Drift
+- Changes in model output distribution
+
+⏱️ Freshness
+```text
+"days_since_update": 122
+```
+
+👉 Detects stale models automatically
+
+---
+
+## 🚀 Pipeline Orchestration
+
+Run full system:
+
+```bash
+python -m src.pipeline.run_pipeline
+```
+
+Executes:
+- Train candidate
+- Evaluate & promote
+- Score latest
+- Monitor system
 
 ---
 
@@ -164,6 +243,7 @@ docker compose up --build
 ### ML & Data
 - Python, pandas, numpy
 - LightGBM
+- MLflow
 
 ### Geospatial
 - GeoPandas, Folium
@@ -178,6 +258,8 @@ docker compose up --build
 - Docker
 - Azure Container Apps
 - GitHub Actions
+- Custom Model Registry
+- Monitoring Pipeline
 
 ---
 
@@ -188,30 +270,32 @@ Most ML projects stop at modeling.
 This system includes:
 
 ✅ End-to-end pipeline
-✅ Real-world data integration
-✅ Spatio-temporal modeling
-✅ API serving layer
-✅ Interactive dashboard
+✅ Model governance (safe promotion)
+✅ Experiment tracking (MLflow)
+✅ Monitoring (drift + freshness)
+✅ Automated orchestration
 ✅ Cloud deployment
 
-👉 Built like a production ML system, not a notebook.
+👉 Built like a production ML system with guardrails
 
 ---
 
 ## ⚠️ Limitations
 
-- No real-time streaming
-- No automated retraining yet
-- Single-region deployment
+- No scheduled retraining yet
+- No automated alerting
+- No data versioning
+- MLflow registry not fully integrated
 
 --- 
 
-## 🚀 Future Work
+## 🚀 Next Phase (In Progress)
 
-- Real-time ingestion (streaming pipelines)
-- MLOps (MLflow, monitoring, retraining)
-- CI/CD automation
-- Multi-region deployment
+⏳ Pipeline Scheduling (Azure / Cron)
+⏳ Monitoring Alerts (drift thresholds)
+⏳ MLflow Model Registry
+⏳ Data Versioning
+⏳ CI/CD for ML Pipeline
 
 ---
 
