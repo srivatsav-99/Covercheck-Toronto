@@ -237,3 +237,5 @@ mlflow.db
 
 # Pipeline temp outputs (optional future-proof)
 *.parquet
+
+docs/mlops/monitoring_alerts.json

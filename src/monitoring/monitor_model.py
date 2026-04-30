@@ -15,6 +15,14 @@ from src.io_paths import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REPORT_PATH = REPO_ROOT / "docs" / "mlops" / "monitoring_report.json"
 
+ALERT_REPORT_PATH = REPO_ROOT / "docs" / "mlops" / "monitoring_alerts.json"
+
+FRESHNESS_THRESHOLD_DAYS = 7
+SURGE_AVG_MIN = 0.00
+SURGE_AVG_MAX = 0.80
+NBHD_AVG_MIN = 0.05
+NBHD_AVG_MAX = 0.95
+
 
 def load_data():
     features = pd.read_parquet(FEATURES_PATH)
@@ -88,6 +96,62 @@ def check_freshness(surge: pd.DataFrame, nbhd: pd.DataFrame):
 # -------------------------
 # MAIN MONITOR
 # -------------------------
+def generate_alerts(report: dict) -> dict:
+    alerts = []
+
+    freshness = report.get("freshness", {})
+    prediction_drift = report.get("prediction_drift", {})
+
+    days_since_update = freshness.get("days_since_update")
+    surge_avg = prediction_drift.get("surge_avg")
+    nbhd_avg = prediction_drift.get("nbhd_avg")
+
+    if days_since_update is not None and days_since_update > FRESHNESS_THRESHOLD_DAYS:
+        alerts.append(
+            {
+                "level": "HIGH",
+                "type": "artifact_freshness",
+                "message": (
+                    f"Prediction artifacts are stale: {days_since_update} days since last update. "
+                    f"Threshold is {FRESHNESS_THRESHOLD_DAYS} days."
+                ),
+                "recommended_action": "Run scoring refresh or retraining pipeline.",
+            }
+        )
+
+    if surge_avg is not None and not (SURGE_AVG_MIN <= surge_avg <= SURGE_AVG_MAX):
+        alerts.append(
+            {
+                "level": "MEDIUM",
+                "type": "surge_prediction_drift",
+                "message": (
+                    f"Average surge probability is outside expected range: {surge_avg:.4f}."
+                ),
+                "recommended_action": "Inspect recent surge predictions and input features.",
+            }
+        )
+
+    if nbhd_avg is not None and not (NBHD_AVG_MIN <= nbhd_avg <= NBHD_AVG_MAX):
+        alerts.append(
+            {
+                "level": "MEDIUM",
+                "type": "neighbourhood_prediction_drift",
+                "message": (
+                    f"Average neighbourhood collision probability is outside expected range: {nbhd_avg:.4f}."
+                ),
+                "recommended_action": "Inspect neighbourhood prediction distribution.",
+            }
+        )
+
+    status = "PASS" if not alerts else "ALERT"
+
+    return {
+        "timestamp": report.get("timestamp"),
+        "status": status,
+        "alert_count": len(alerts),
+        "alerts": alerts,
+    }
+
 def main():
     print("=== Monitoring Model ===")
 
@@ -100,6 +164,8 @@ def main():
         "freshness": check_freshness(surge, nbhd),
     }
 
+    alerts = generate_alerts(report)
+
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with open(REPORT_PATH, "w") as f:
@@ -107,6 +173,12 @@ def main():
 
     print("Monitoring report saved:", REPORT_PATH)
     print(json.dumps(report, indent=2))
+
+    with open(ALERT_REPORT_PATH, "w") as f:
+        json.dump(alerts, f, indent=2)
+
+    print("Monitoring alerts saved:", ALERT_REPORT_PATH)
+    print(json.dumps(alerts, indent=2))
 
 
 if __name__ == "__main__":
