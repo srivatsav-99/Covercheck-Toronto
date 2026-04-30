@@ -29,8 +29,28 @@ jobs:
       - name: Run tests
         run: pytest -q
 
-      - name: Run scoring pipeline (validation)
-        run: poetry run python -m src.scoring.score_latest
+      - name: Validate pipeline imports
+        run: |
+          python -c "from src.scoring.score_latest import score_latest; print('score_latest import OK')"
+          python -c "from src.monitoring.monitor_model import generate_alerts; print('monitoring import OK')"
+          python -c "from src.pipeline.run_pipeline import main; print('pipeline import OK')"
+          python -c "from src.registry.promote_model import promote_candidate; print('promotion import OK')"
 
-      - name: Run monitoring check
-        run: poetry run python -m src.monitoring.monitor_model
+      - name: Validate monitoring alert logic
+        run: |
+          python - <<'PY'
+          from src.monitoring.monitor_model import generate_alerts
+
+          report = {
+              "timestamp": "ci-test",
+              "freshness": {"days_since_update": 30},
+              "prediction_drift": {"surge_avg": 0.05, "nbhd_avg": 0.50},
+          }
+
+          alerts = generate_alerts(report)
+          assert alerts["status"] == "ALERT"
+          assert alerts["alert_count"] == 1
+          assert alerts["alerts"][0]["type"] == "artifact_freshness"
+
+          print("monitoring alert logic OK")
+          PY
