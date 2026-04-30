@@ -1,0 +1,36 @@
+name: CoverCheck ML Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - feature/stage-e-mlops-upgrade
+  pull_request:
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Run scoring pipeline (validation)
+        run: poetry run python -m src.scoring.score_latest
+
+      - name: Run monitoring check
+        run: poetry run python -m src.monitoring.monitor_model
