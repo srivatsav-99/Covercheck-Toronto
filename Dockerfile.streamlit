@@ -30,7 +30,11 @@ COPY app ./app
 COPY src ./src
 COPY config ./config
 COPY assets ./assets
+COPY docs ./docs
+COPY data/processed ./data/processed
+COPY data/interim ./data/interim
+COPY models ./models
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app/covercheck_dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]
+CMD ["streamlit", "run", "app/covercheck_dashboard.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.enableCORS=true", "--server.enableXsrfProtection=true", "--browser.serverAddress=0.0.0.0"]
