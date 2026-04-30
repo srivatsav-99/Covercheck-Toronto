@@ -1,0 +1,15 @@
+{
+  "model_name": "nbhd_collision_model",
+  "model_type": "LightGBM + CalibratedClassifierCV",
+  "version": "v1",
+  "created_at": "2026-04-30",
+  "training_data": "features_v2.parquet",
+  "metrics": {
+    "roc_auc": 0.718,
+    "pr_auc": 0.758,
+    "brier": 0.212,
+    "precision_at_10": 0.90
+  },
+  "promotion_reason": "Initial production model",
+  "status": "champion"
+}

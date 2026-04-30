@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-04-30T18:38:21.799917",
+  "data_drift": [
+    {
+      "feature": "collisions",
+      "mean": 0.9522899990160499,
+      "std": 1.2741974348449845
+    },
+    {
+      "feature": "ksi_collisions",
+      "mean": 0.002141538319066058,
+      "std": 0.046445807658601374
+    },
+    {
+      "feature": "ksi_fatal_collisions",
+      "mean": 0.0003501704548743148,
+      "std": 0.01878675908534122
+    },
+    {
+      "feature": "ksi_serious_collisions",
+      "mean": 0.00182464852725831,
+      "std": 0.04281235475878659
+    },
+    {
+      "feature": "ksi_fatal_victims",
+      "mean": 0.0003559583962771961,
+      "std": 0.01931828289769002
+    },
+    {
+      "feature": "ksi_victim_count",
+      "mean": 0.005255450793816163,
+      "std": 0.12886794736801205
+    },
+    {
+      "feature": "ksi_weighted_score",
+      "mean": 0.004699808419139565,
+      "std": 0.10456816292992765
+    },
+    {
+      "feature": "tavg",
+      "mean": 9.161796982167353,
+      "std": 10.1611694390763
+    },
+    {
+      "feature": "tmin",
+      "mean": 5.222222222222222,
+      "std": 10.063285355726908
+    },
+    {
+      "feature": "tmax",
+      "mean": 12.917992684042067,
+      "std": 10.505535724721724
+    }
+  ],
+  "prediction_drift": {
+    "surge_avg": 0.036540998714219605,
+    "nbhd_avg": 0.501548406463651,
+    "nbhd_score_column_used": "proba_collision_t1"
+  },
+  "freshness": {
+    "surge_last_date": "2025-12-29 00:00:00",
+    "nbhd_last_date": "2025-12-29 00:00:00",
+    "days_since_update": 122
+  }
+}

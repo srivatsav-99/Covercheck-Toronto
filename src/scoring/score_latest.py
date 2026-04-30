@@ -11,8 +11,10 @@ from src.io_paths import FEATURES_PATH, SURGE_PRED_PATH, NBHD_PRED_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-CITY_MODEL_PATH = REPO_ROOT / "models" / "citywide_model.pkl"
-NBHD_MODEL_PATH = REPO_ROOT / "models" / "nbhd_collision_model.pkl"
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+CITY_MODEL_PATH = BASE_DIR / "models" / "registry" / "citywide" / "champion" / "model.pkl"
+NBHD_MODEL_PATH = BASE_DIR / "models" / "registry" / "neighbourhood_collision" / "champion" / "model.pkl"
 
 SURGE_THRESHOLD = 0.50
 
