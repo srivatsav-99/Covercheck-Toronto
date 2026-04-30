@@ -219,3 +219,9 @@ data/interim/
 
 models/*.pkl
 models/**/*.pkl
+
+# MLflow local tracking DB
+mlflow.db
+
+# Candidate model binaries
+models/registry/**/candidates/**/model.pkl
