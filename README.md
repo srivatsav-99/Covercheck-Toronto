@@ -280,22 +280,22 @@ This system includes:
 
 ---
 
-## ⚠️ Limitations
+## ⚠️ Current Limitations
 
-- No scheduled retraining yet
-- No automated alerting
-- No data versioning
-- MLflow registry not fully integrated
+- Uses local MLflow tracking (no remote server yet)
+- Data versioning not implemented (DVC planned)
+- Batch pipeline (no real-time streaming)
+- Single-region deployment (Azure Container Apps)
 
 --- 
 
-## 🚀 Next Phase (In Progress)
+## 🚀 Next Phase (Planned Enhancements)
 
-⏳ Pipeline Scheduling (Azure / Cron)
-⏳ Monitoring Alerts (drift thresholds)
-⏳ MLflow Model Registry
-⏳ Data Versioning
-⏳ CI/CD for ML Pipeline
+- MLflow Model Registry (production-grade)
+- Data Versioning (DVC / LakeFS)
+- Real-time ingestion (Kafka / Event Hub)
+- Monitoring dashboards (Grafana)
+- Multi-region deployment
 
 ---
 
