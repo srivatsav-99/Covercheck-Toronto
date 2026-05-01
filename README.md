@@ -51,23 +51,7 @@ This system enables **proactive decision-making** for:
 
 ## 🏗️ End-to-End ML Architecture
 
-Raw Data
-   ↓
-Feature Engineering
-   ↓
-Training Pipeline (MLflow)
-   ↓
-Model Registry (Champion / Candidate)
-   ↓
-Promotion Logic (Metric Guardrails)
-   ↓
-Scoring Pipeline
-   ↓
-Monitoring (Drift + Freshness)
-   ↓
-FastAPI (Serving Layer)
-   ↓
-Streamlit Dashboard
+![Architecture Diagram](assets/architecture_diagram.png)
 
 ---
 
@@ -126,6 +110,22 @@ Tracks:
 ```
 
 👉 Detects stale models automatically
+
+---
+
+## 🔁 End-to-End Pipeline Behavior (Real Example)
+
+A typical pipeline run:
+
+1. Candidate model trained
+2. Compared against champion model
+3. ❌ Underperforming candidate → blocked
+4. Predictions generated using champion model
+5. Monitoring detects stale data
+6. ⚠️ Alert triggered
+7. 🔁 Pipeline automatically re-executed
+
+👉 Ensures only high-quality models reach production
 
 ---
 
@@ -235,6 +235,33 @@ docker compose up --build
 ### Access
 - Dashboard → http://localhost:8501
 - API → http://localhost:8000/docs
+
+---
+
+## 🧪 Production ML Guarantees
+
+This system enforces:
+
+- ✅ No model regression (safe promotion logic)
+- ✅ Reproducible experiments (MLflow)
+- ✅ Observability (monitoring + alerts)
+- ✅ Automated execution (Prefect)
+- ✅ CI validation (GitHub Actions)
+
+👉 Designed like a real production ML platform
+
+---
+
+## 🔁 Pipeline Entry Points
+
+### Run manually
+```bash
+python -m src.pipeline.run_pipeline
+```
+
+### Run scheduled (Prefect)
+- Weekly training pipeline
+- Daily monitoring + alert trigger
 
 ---
 
